@@ -34,7 +34,7 @@ enum { ERASE_PIECE, DRAW_PIECE };
 #define PF_ROWS		18
 #define PF_COLS		10
 /* offset of the playfield from the left side of the screen */
-#define PF_XOFFS	2
+#define PF_XOFFS	7
 #define PF_YOFFS	0
 
 uint16_t scr[SCR_COLS * SCR_ROWS];
@@ -64,25 +64,25 @@ static int score, level, lines;
 static int just_spawned;
 
 static const char *bgdata[SCR_ROWS] = {
-	" L..........R{-----}          ",
-	" L..........R(.....)          ",
-	" L..........R[_____]          ",
-	" L..........R.......          ",
-	" L..........R                 ",
-	" L..........R{-----}          ",
-	" L..........R(.....)          ",
-	" L..........R(.....)          ",
-	" L..........R>=====<          ",
-	" L..........R(.....)          ",
-	" L..........R(.....)          ",
-	" L..........R[_____]          ",
-	" L..........R {----}          ",
-	" L..........R (....)          ",
-	" L..........R (....)          ",
-	" L..........R (....)          ",
-	" L..........R (....)          ",
-	" L..........R [____]          ",
-	" `BBBBBBBBBB/                 ",
+	"      L..........R{-----}     ",
+	"      L..........R(.....)     ",
+	"      L..........R[_____]     ",
+	"      L..........R.......     ",
+	"      L..........R            ",
+	"      L..........R{-----}     ",
+	"      L..........R(.....)     ",
+	"      L..........R(.....)     ",
+	"      L..........R>=====<     ",
+	"      L..........R(.....)     ",
+	"      L..........R(.....)     ",
+	"      L..........R[_____]     ",
+	"      L..........R {----}     ",
+	"      L..........R (....)     ",
+	"      L..........R (....)     ",
+	"      L..........R (....)     ",
+	"      L..........R (....)     ",
+	"      L..........R [____]     ",
+	"      `BBBBBBBBBB/            ",
 	"                              "
 };
 
@@ -175,9 +175,9 @@ int init_game(void)
 		row += SCR_COLS;
 	}
 
-	place_str(14, 1, "SCORE");
-	place_str(14, 6, "LEVEL");
-	place_str(14, 9, "LINES");
+	place_str(12 + PF_XOFFS, 1, "SCORE");
+	place_str(12 + PF_XOFFS, 6, "LEVEL");
+	place_str(12 + PF_XOFFS, 9, "LINES");
 
 	drawbg();
 	print_numbers();
@@ -293,17 +293,17 @@ static void print_numbers(void)
 	} else {
 		sprintf(buf, "%6d", score);
 	}
-	draw_str(13, 3, buf);
+	draw_str(11 + PF_XOFFS, 3, buf);
 
 	sprintf(buf, "%2d", level);
-	draw_str(16, 7, buf);
+	draw_str(14 + PF_XOFFS, 7, buf);
 
 	if(lines > 9999) {
 		sprintf(buf, "%5d", lines);
 	} else {
 		sprintf(buf, "%4d", lines);
 	}
-	draw_str(14, 10, buf);
+	draw_str(12 + PF_XOFFS, 10, buf);
 }
 
 void game_input(int c)

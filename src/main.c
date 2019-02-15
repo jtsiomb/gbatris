@@ -55,7 +55,7 @@ static int handle_keys(unsigned long msec)
 {
 	static uint16_t prevstate;
 	static unsigned long first_press[4], last_inp[4];
-	static const char input[] = {'d', 'a', '#', 's'};
+	static const char input[] = {'d', 'a', '\n', 's'};
 
 	int i, upd = 0;
 	uint16_t keystate, keydelta;
