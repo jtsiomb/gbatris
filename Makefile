@@ -1,6 +1,7 @@
 src = $(wildcard src/*.c)
-obj = $(src:.c=.o)
-dep = $(obj:.o=.d)
+ssrc = $(wildcard src/*.s)
+obj = $(src:.c=.o) $(ssrc:.s=.o)
+dep = $(src:.c=.d)
 name = gbatris
 elf = $(name).elf
 bin = $(name).gba

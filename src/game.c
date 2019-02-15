@@ -37,7 +37,7 @@ enum { ERASE_PIECE, DRAW_PIECE };
 #define PF_XOFFS	2
 #define PF_YOFFS	0
 
-int scr[SCR_COLS * SCR_ROWS];
+uint16_t scr[SCR_COLS * SCR_ROWS];
 
 static void addscore(int nlines);
 static void print_numbers(void);
@@ -49,6 +49,8 @@ static void draw_piece(int piece, const int *pos, int rot, int mode);
 static void drawbg(void);
 static void drawpf(void);
 static void draw_line(int row, int blink);
+static void place_str(int x, int y, const char *s);
+static void draw_str(int x, int y, const char *s);
 
 
 static int pos[2], next_pos[2];
@@ -93,7 +95,7 @@ static const long level_speed[NUM_LEVELS] = {
 int init_game(void)
 {
 	int i, j;
-	int *row = scr;
+	uint16_t *row = scr;
 
 	uint32_t seed = REG_TM0CNT_L | (timer_msec << 16);
 	srand(seed);
@@ -173,26 +175,12 @@ int init_game(void)
 		row += SCR_COLS;
 	}
 
+	place_str(14, 1, "SCORE");
+	place_str(14, 6, "LEVEL");
+	place_str(14, 9, "LINES");
+
 	drawbg();
-	/*
-	int pos[] = {3, 3};
-	draw_piece(1, pos, 0, DRAW_PIECE);
-	*/
-
-	/*
-	ansi_setcursor(1, 14 * 2);
-	ansi_setcolor(BLACK, WHITE);
-	fputs("S C O R E", stdout);
-
-	ansi_setcursor(6, 14 * 2);
-	fputs("L E V E L", stdout);
-
-	ansi_setcursor(9, 14 * 2);
-	fputs("L I N E S", stdout);
-
 	print_numbers();
-	fflush(stdout);
-	*/
 	return 0;
 }
 
@@ -214,7 +202,7 @@ long update(long msec)
 
 	if(gameover) {
 		int i, row = PF_ROWS - gameover;
-		int *ptr;
+		uint16_t *ptr;
 
 		if(row >= 0) {
 			ptr = scr + (row + PF_YOFFS) * SCR_COLS + PF_XOFFS;
@@ -298,19 +286,24 @@ static void addscore(int nlines)
 
 static void print_numbers(void)
 {
-	/*
-	ansi_setcolor(BLACK, WHITE);
+	char buf[16];
 
-	ansi_setcursor(3, 14 * 2);
-	printf("%10d", score);
+	if(score > 999999) {
+		sprintf(buf, "%7d", score);
+	} else {
+		sprintf(buf, "%6d", score);
+	}
+	draw_str(13, 3, buf);
 
-	ansi_setcursor(7, 17 * 2);
-	printf("%2d", level);
+	sprintf(buf, "%2d", level);
+	draw_str(16, 7, buf);
 
-	ansi_setcursor(10, 14 * 2);
-	printf("%8d", lines);
-	fflush(stdout);
-	*/
+	if(lines > 9999) {
+		sprintf(buf, "%5d", lines);
+	} else {
+		sprintf(buf, "%4d", lines);
+	}
+	draw_str(14, 10, buf);
 }
 
 void game_input(int c)
@@ -428,7 +421,7 @@ static int collision(int piece, const int *pos)
 static void stick(int piece, const int *pos)
 {
 	int i, j, nblank;
-	int *pfline;
+	uint16_t *pfline;
 	unsigned char *p = pieces[piece][cur_rot];
 
 	num_complines = 0;
@@ -439,7 +432,7 @@ static void stick(int piece, const int *pos)
 		p++;
 
 		pfline = scr + (y + PF_YOFFS) * SCR_COLS + PF_XOFFS;
-		pfline[x] = TILE_BLOCK;
+		pfline[x] = TILE_BLOCK | BGTILE_PAL(piece + FIRST_PIECE_PAL);
 
 		nblank = 0;
 		for(j=0; j<PF_COLS; j++) {
@@ -461,8 +454,8 @@ static void stick(int piece, const int *pos)
 static void erase_completed(void)
 {
 	int i, j, srow, drow;
-	int *pfstart = scr + PF_YOFFS * SCR_COLS + PF_XOFFS;
-	int *dptr;
+	uint16_t *pfstart = scr + PF_YOFFS * SCR_COLS + PF_XOFFS;
+	uint16_t *dptr;
 
 	/* sort completed lines from highest to lowest row number */
 	for(i=0; i<num_complines-1; i++) {
@@ -491,7 +484,7 @@ static void erase_completed(void)
 			}
 
 		} else if(srow != drow) {
-			int *sptr = pfstart + srow * SCR_COLS;
+			uint16_t *sptr = pfstart + srow * SCR_COLS;
 			memcpy(dptr, sptr, PF_COLS * sizeof *dptr);
 		}
 
@@ -532,7 +525,7 @@ static void draw_piece(int piece, const int *pos, int rot, int mode)
 static void drawbg(void)
 {
 	int i, j;
-	int *sptr = scr;
+	uint16_t *sptr = scr;
 	uint16_t *dptr = scrmem;
 
 	for(i=0; i<SCR_ROWS; i++) {
@@ -546,7 +539,7 @@ static void drawbg(void)
 static void drawpf(void)
 {
 	int i, j;
-	int *sptr = scr + PF_YOFFS * SCR_COLS + PF_XOFFS;
+	uint16_t *sptr = scr + PF_YOFFS * SCR_COLS + PF_XOFFS;
 	uint16_t *dptr = scrmem + PF_XOFFS;
 
 	for(i=0; i<PF_ROWS; i++) {
@@ -564,7 +557,7 @@ static void draw_line(int row, int blink)
 	uint16_t *dptr = scrmem + row * VIRT_COLS + PF_XOFFS;
 
 	if(blink) {
-		int *sptr = scr + (row + PF_YOFFS) * SCR_COLS + PF_XOFFS;
+		uint16_t *sptr = scr + (row + PF_YOFFS) * SCR_COLS + PF_XOFFS;
 
 		for(i=0; i<PF_COLS; i++) {
 			*dptr++ = *sptr++;
@@ -575,6 +568,26 @@ static void draw_line(int row, int blink)
 		}
 	}
 }
+
+
+static void place_str(int x, int y, const char *s)
+{
+	uint16_t *dptr = scr + y * SCR_COLS + x;
+
+	while(*s) {
+		*dptr++ = *s++;
+	}
+}
+
+static void draw_str(int x, int y, const char *s)
+{
+	uint16_t *dptr = scrmem + y * VIRT_COLS + x;
+
+	while(*s) {
+		*dptr++ = *s++;
+	}
+}
+
 
 void dbgblock(int x, int y, int pal)
 {

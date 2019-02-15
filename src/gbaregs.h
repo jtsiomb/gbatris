@@ -170,7 +170,7 @@
 
 /* REG_DISPCNT bits */
 #define DISPCNT_MODE(x)			(x)
-#define DISPCNT_FB(x)			((x) << 4)
+#define DISPCNT_FB1				0x0010
 #define DISPCNT_HBLANK_OBJPROC	0x0020
 #define DISPCNT_OBJMAP_1D		0x0040
 #define DISPCNT_FORCE_BLANK		0x0080
