@@ -15,29 +15,42 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef GAME_H_
-#define GAME_H_
+#ifndef _INTR_H_
+#define _INTR_H_
 
-#define SCR_WIDTH	240
-#define SCR_HEIGHT	160
-#define VIRT_WIDTH	256
-#define VIRT_HEIGHT	256
+#include "gbaregs.h"
 
-#define SCR_ROWS	(SCR_HEIGHT / 8)
-#define SCR_COLS	(SCR_WIDTH / 8)
-#define VIRT_ROWS	(VIRT_HEIGHT / 8)
-#define VIRT_COLS	(VIRT_WIDTH / 8)
+/* interrupts */
+enum {
+	INTR_VBLANK,
+	INTR_HBLANK,
+	INTR_VCOUNT,
+	INTR_TIMER0,
+	INTR_TIMER1,
+	INTR_TIMER2,
+	INTR_TIMER3,
+	INTR_COMM,
+	INTR_DMA0,
+	INTR_DMA1,
+	INTR_DMA2,
+	INTR_DMA3,
+	INTR_KEY,
+	INTR_GPAK
+};
 
-uint16_t *scrmem, *chrmem;
+void intr_init(void);
 
-long tick_interval;
+/* set/clear interrupts */
+#define set_intr()	\
+	do { REG_IME |= 0x0001; } while(0)
+#define clr_intr()	\
+	do { REG_IME &= 0xfffe; } while(0)
 
-int init_game(void);
-void cleanup_game(void);
+/* set an interrupt handler */
+void interrupt(int intr, void (*handler)(void));
 
-long update(long msec);
-void game_input(int c);
+/* mask/unmask an interrupt */
+#define mask(intr)		do {REG_IE &= ~(1 << (intr));} while(0)
+#define unmask(intr)	do {REG_IE |= 1 << (intr);} while(0)
 
-void dbgblock(int x, int y, int col);
-
-#endif	/* GAME_H_ */
+#endif	/* _INTR_H_ */

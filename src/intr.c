@@ -15,29 +15,37 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef GAME_H_
-#define GAME_H_
+#include "intr.h"
 
-#define SCR_WIDTH	240
-#define SCR_HEIGHT	160
-#define VIRT_WIDTH	256
-#define VIRT_HEIGHT	256
+#define MAX_INTR	14
+static void (*intr_table[MAX_INTR])(void);
 
-#define SCR_ROWS	(SCR_HEIGHT / 8)
-#define SCR_COLS	(SCR_WIDTH / 8)
-#define VIRT_ROWS	(VIRT_HEIGHT / 8)
-#define VIRT_COLS	(VIRT_WIDTH / 8)
+__attribute__ ((target("arm")))
+static void intr_handler(void)
+{
+	int i;
+	uint16_t iflags;
 
-uint16_t *scrmem, *chrmem;
+	clr_intr();
+	iflags = REG_IF & 0x3fff;
 
-long tick_interval;
 
-int init_game(void);
-void cleanup_game(void);
+	for(i=0; i<MAX_INTR; i++) {
+		if((iflags & (1 << i)) && intr_table[i]) {
+			intr_table[i]();
+		}
+	}
 
-long update(long msec);
-void game_input(int c);
+	REG_IF = iflags;	/* ack intr */
+	set_intr();
+}
 
-void dbgblock(int x, int y, int col);
+void intr_init(void)
+{
+	INTR_VECTOR = (uint32_t)intr_handler;
+}
 
-#endif	/* GAME_H_ */
+void interrupt(int intr, void (*handler)(void))
+{
+	intr_table[intr] = handler;
+}

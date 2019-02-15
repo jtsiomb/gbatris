@@ -24,12 +24,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "game.h"
 #include "pieces.h"
 #include "scoredb.h"
+#include "tileset.h"
+#include "timer.h"
+#include "gbaregs.h"
 
 enum { ERASE_PIECE, DRAW_PIECE };
-
-/* dimensions of the whole screen */
-#define SCR_ROWS	20
-#define SCR_COLS	30
 
 /* dimensions of the playfield */
 #define PF_ROWS		18
@@ -62,51 +61,27 @@ static int pause;
 static int score, level, lines;
 static int just_spawned;
 
-enum {
-	TILE_BLACK,
-	TILE_PF,
-	TILE_PFSEP,
-	TILE_GAMEOVER,
-	TILE_IPIECE,
-	TILE_OPIECE,
-	TILE_JPIECE,
-	TILE_LPIECE,
-	TILE_SPIECE,
-	TILE_TPIECE,
-	TILE_ZPIECE,
-	TILE_FRM_TL,
-	TILE_FRM_TR,
-	TILE_FRM_BL,
-	TILE_FRM_BR,
-	TILE_FRM_LTEE,
-	TILE_FRM_RTEE,
-	TILE_FRM_HLINE,
-	TILE_FRM_LVLINE,
-	TILE_FRM_RVLINE
-};
-#define FIRST_PIECE_TILE	TILE_IPIECE
-
 static const char *bgdata[SCR_ROWS] = {
-	" #..........#{-----}",
-	" #..........#(.....)",
-	" #..........#[-----]",
-	" #..........#.......",
-	" #..........#       ",
-	" #..........#{-----}",
-	" #..........#(.....)",
-	" #..........#(.....)",
-	" #..........#>-----<",
-	" #..........#(.....)",
-	" #..........#(.....)",
-	" #..........#[-----]",
-	" #..........# {----}",
-	" #..........# (....)",
-	" #..........# (....)",
-	" #..........# (....)",
-	" #..........# (....)",
-	" #..........# [----]",
-	" ############       ",
-	"                    "
+	" L..........R{-----}          ",
+	" L..........R(.....)          ",
+	" L..........R[_____]          ",
+	" L..........R.......          ",
+	" L..........R                 ",
+	" L..........R{-----}          ",
+	" L..........R(.....)          ",
+	" L..........R(.....)          ",
+	" L..........R>=====<          ",
+	" L..........R(.....)          ",
+	" L..........R(.....)          ",
+	" L..........R[_____]          ",
+	" L..........R {----}          ",
+	" L..........R (....)          ",
+	" L..........R (....)          ",
+	" L..........R (....)          ",
+	" L..........R (....)          ",
+	" L..........R [____]          ",
+	" `BBBBBBBBBB/                 ",
+	"                              "
 };
 
 #define NUM_LEVELS	21
@@ -120,7 +95,8 @@ int init_game(void)
 	int i, j;
 	int *row = scr;
 
-	srand(time(0));
+	uint32_t seed = REG_TM0CNT_L | (timer_msec << 16);
+	srand(seed);
 
 	pause = 0;
 	gameover = 0;
@@ -130,13 +106,27 @@ int init_game(void)
 	cur_piece = -1;
 	next_piece = rand() % NUM_PIECES;
 
+	memset(scrmem, 0, VIRT_COLS * VIRT_ROWS * 2);
+
 	/* fill the screen buffer, and draw */
 	for(i=0; i<SCR_ROWS; i++) {
 		for(j=0; j<SCR_COLS; j++) {
 			int tile;
 			switch(bgdata[i][j]) {
-			case '#':
-				tile = TILE_PFSEP;
+			case 'L':
+				tile = TILE_LPFSEP;
+				break;
+			case 'R':
+				tile = TILE_RPFSEP;
+				break;
+			case 'B':
+				tile = TILE_BPFSEP;
+				break;
+			case '`':
+				tile = TILE_BLPFSEP;
+				break;
+			case '/':
+				tile = TILE_BRPFSEP;
 				break;
 			case '.':
 				tile = TILE_PF;
@@ -160,7 +150,13 @@ int init_game(void)
 				tile = TILE_FRM_RTEE;
 				break;
 			case '-':
-				tile = TILE_FRM_HLINE;
+				tile = TILE_FRM_THLINE;
+				break;
+			case '_':
+				tile = TILE_FRM_BHLINE;
+				break;
+			case '=':
+				tile = TILE_FRM_MHLINE;
 				break;
 			case '(':
 				tile = TILE_FRM_LVLINE;
@@ -178,6 +174,10 @@ int init_game(void)
 	}
 
 	drawbg();
+	/*
+	int pos[] = {3, 3};
+	draw_piece(1, pos, 0, DRAW_PIECE);
+	*/
 
 	/*
 	ansi_setcursor(1, 14 * 2);
@@ -245,7 +245,6 @@ long update(long msec)
 		}
 		return BLINK_UPD_RATE;
 	}
-
 
 	/* fall */
 	while(dt >= tick_interval) {
@@ -440,7 +439,7 @@ static void stick(int piece, const int *pos)
 		p++;
 
 		pfline = scr + (y + PF_YOFFS) * SCR_COLS + PF_XOFFS;
-		pfline[x] = piece + FIRST_PIECE_TILE;
+		pfline[x] = TILE_BLOCK;
 
 		nblank = 0;
 		for(j=0; j<PF_COLS; j++) {
@@ -506,9 +505,18 @@ static void erase_completed(void)
 
 static void draw_piece(int piece, const int *pos, int rot, int mode)
 {
-	int i;
-	int tile = mode == ERASE_PIECE ? TILE_PF : FIRST_PIECE_TILE + piece;
+	int i, tile, pal;
+	uint16_t tval;
 	unsigned char *p = pieces[piece][rot];
+
+	if(mode == ERASE_PIECE) {
+		tile = TILE_PF;
+		pal = 0;
+	} else {
+		tile = TILE_BLOCK;
+		pal = FIRST_PIECE_PAL + piece;
+	}
+	tval = tile | BGTILE_PAL(pal);
 
 	for(i=0; i<4; i++) {
 		int x = PF_XOFFS + pos[1] + BLKX(*p);
@@ -517,61 +525,58 @@ static void draw_piece(int piece, const int *pos, int rot, int mode)
 
 		if(y < 0) continue;
 
-		/*
-		ansi_setcursor(y, x * 2);
-		wrtile(tile);
-		*/
+		scrmem[y * VIRT_COLS + x] = tval;
 	}
 }
 
 static void drawbg(void)
 {
-	/*
 	int i, j;
 	int *sptr = scr;
+	uint16_t *dptr = scrmem;
 
 	for(i=0; i<SCR_ROWS; i++) {
-		ansi_setcursor(i, 0);
 		for(j=0; j<SCR_COLS; j++) {
-			wrtile(*sptr++);
+			*dptr++ = *sptr++;
 		}
+		dptr += VIRT_COLS - SCR_COLS;
 	}
-	*/
 }
 
 static void drawpf(void)
 {
-	/*
 	int i, j;
 	int *sptr = scr + PF_YOFFS * SCR_COLS + PF_XOFFS;
+	uint16_t *dptr = scrmem + PF_XOFFS;
 
 	for(i=0; i<PF_ROWS; i++) {
-		ansi_setcursor(i, PF_XOFFS * 2);
 		for(j=0; j<PF_COLS; j++) {
-			wrtile(sptr[j]);
+			*dptr++ = *sptr++;
 		}
-		sptr += SCR_COLS;
+		sptr += SCR_COLS - PF_COLS;
+		dptr += VIRT_COLS - PF_COLS;
 	}
-	*/
 }
 
 static void draw_line(int row, int blink)
 {
-	/*
 	int i;
-
-	ansi_setcursor(row, PF_XOFFS * 2);
+	uint16_t *dptr = scrmem + row * VIRT_COLS + PF_XOFFS;
 
 	if(blink) {
 		int *sptr = scr + (row + PF_YOFFS) * SCR_COLS + PF_XOFFS;
 
 		for(i=0; i<PF_COLS; i++) {
-			wrtile(*sptr++);
+			*dptr++ = *sptr++;
 		}
 	} else {
 		for(i=0; i<PF_COLS; i++) {
-			wrtile(TILE_PF);
+			*dptr++ = TILE_PF;
 		}
 	}
-	*/
+}
+
+void dbgblock(int x, int y, int pal)
+{
+	scrmem[y * VIRT_COLS + x] = TILE_X | BGTILE_PAL(pal + 8);
 }

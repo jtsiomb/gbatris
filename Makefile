@@ -7,12 +7,12 @@ bin = $(name).gba
 elf_mb = $(name)_mb.elf
 bin_mb = $(name)_mb.gba
 
-ARCH = arm-none-eabi
+ARCH = arm-none-eabi-
 
-CPP = $(ARCH)-cpp
-CC = $(ARCH)-gcc
-AS = $(ARCH)-as
-OBJCOPY = $(ARCH)-objcopy
+CPP = $(ARCH)cpp
+CC = $(ARCH)gcc
+AS = $(ARCH)as
+OBJCOPY = $(ARCH)objcopy
 EMU = vbam
 
 opt = -O3 -fomit-frame-pointer -mcpu=arm7tdmi -mtune=arm7tdmi -mthumb
@@ -58,3 +58,7 @@ run: $(bin_mb)
 .PHONY: simrun
 simrun: $(bin)
 	$(EMU) $(EMUFLAGS) $(bin)
+
+.PHONY: disasm
+disasm: $(elf)
+	$(ARCH)objdump -d $< >$@

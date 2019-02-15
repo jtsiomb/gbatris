@@ -24,6 +24,9 @@
 #define CRAM_BG_ADDR	0x5000000
 #define CRAM_OBJ_ADDR	0x5000200
 
+/* interrupt handler */
+#define INTR_VECTOR		(*(volatile uint32_t*)0x3007ffc)
+
 
 /* I/O space */
 
@@ -124,6 +127,9 @@
 #define REG_TM3CNT_L	REG16(0x10c)
 #define REG_TM3CNT_H	REG16(0x10e)
 
+#define REG_TMCNT_L(x)	REG16(0x100 + ((x) << 2))
+#define REG_TMCNT_H(x)	REG16(0x102 + ((x) << 2))
+
 /* ---- communication registers (serial/joybus/gpio) ---- */
 #define REG_SIODATA32	REG32(0x120)
 #define REG_SIOMULTI0	REG16(0x120)
@@ -195,5 +201,45 @@
 #define BGCNT_SZ_TX_512X512		BGCNT_SZ(3)
 #define BGCNT_SZ_RS_1024X1024	BGCNT_SZ(3)
 
+/* REG_IF bits */
+#define IF_VBLANK		0x0001
+#define IF_HBLANK		0x0002
+#define IF_VMATCH		0x0004
+#define IF_TIMER0		0x0008
+#define IF_TIMER1		0x0010
+#define IF_TIMER2		0x0020
+#define IF_TIMER3		0x0040
+#define IF_COMM			0x0080
+#define IF_DMA0			0x0100
+#define IF_DMA1			0x0200
+#define IF_DMA2			0x0400
+#define IF_DMA3			0x0800
+#define IF_KEY			0x1000
+#define IF_GPAK			0x2000
+
+/* REG_TMXCNT bits */
+#define TMCNT_PRESCL_CLK1		0
+#define TMCNT_PRESCL_CLK64		1
+#define TMCNT_PRESCL_CLK256		2
+#define TMCNT_PRESCL_CLK1024	3
+
+#define TMCNT_COUNTUP			0x04
+#define TMCNT_IE				0x40
+#define TMCNT_EN				0x80
+
+/* REG_KEY* bits */
+#define KEY_A			0x0001
+#define KEY_B			0x0002
+#define KEY_SELECT		0x0004
+#define KEY_START		0x0008
+#define KEY_RIGHT		0x0010
+#define KEY_LEFT		0x0020
+#define KEY_UP			0x0040
+#define KEY_DOWN		0x0080
+#define KEY_RT			0x0100
+#define KEY_LT			0x0200
+
+#define KEYCNT_IE		0x4000
+#define KEYCNT_IAND		0x8000
 
 #endif	/* GBAREGS_H_ */

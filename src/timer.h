@@ -15,29 +15,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef GAME_H_
-#define GAME_H_
+#ifndef _TIMER_H_
+#define _TIMER_H_
 
-#define SCR_WIDTH	240
-#define SCR_HEIGHT	160
-#define VIRT_WIDTH	256
-#define VIRT_HEIGHT	256
+#include "gbaregs.h"
 
-#define SCR_ROWS	(SCR_HEIGHT / 8)
-#define SCR_COLS	(SCR_WIDTH / 8)
-#define VIRT_ROWS	(VIRT_HEIGHT / 8)
-#define VIRT_COLS	(VIRT_WIDTH / 8)
+#define enable_timer(x) \
+	do { REG_TMCNT_H(x) |= TMCNT_EN; } while(0)
 
-uint16_t *scrmem, *chrmem;
+#define disable_timer(x) \
+	do { REG_TMCNT_H(x) &= ~TMCNT_EN; } while(0)
 
-long tick_interval;
+volatile unsigned long timer_msec;
 
-int init_game(void);
-void cleanup_game(void);
+void reset_msec_timer(void);
 
-long update(long msec);
-void game_input(int c);
-
-void dbgblock(int x, int y, int col);
-
-#endif	/* GAME_H_ */
+#endif	/* _TIMER_H_ */
