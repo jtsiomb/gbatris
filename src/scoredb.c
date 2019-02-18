@@ -19,13 +19,61 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 #include "scoredb.h"
+#include "gbaregs.h"
 
-int save_score(int score, int lines, int level)
+#define MAGIC "GBATRIS1"
+#define SCORE_OFFS	8
+
+void read_sram(int sram_offs, void *buf, int size);
+void write_sram(int sram_offs, void *buf, int size);
+
+
+int load_scores(void)
 {
-	return -1;
+	int i;
+	char magic[8];
+
+	read_sram(0, magic, 8);
+	if(memcmp(magic, MAGIC, sizeof magic) != 0) {
+		for(i=0; i<10; i++) {
+			memcpy(scores[i].name, "--- ", NAME_SIZE + 1);
+		}
+		return -1;
+	}
+
+	read_sram(SCORE_OFFS, scores, sizeof scores);
+	return 0;
 }
 
-int print_scores(int num)
+void save_scores(void)
 {
-	return -1;
+	write_sram(0, MAGIC, 8);
+	write_sram(SCORE_OFFS, scores, sizeof scores);
+}
+
+void save_score(char *name, int score, int lines, int level)
+{
+	int i, rank = -1;
+
+	for(i=0; i<10; i++) {
+		if(scores[i].score < score) {
+			rank = i;
+			break;
+		}
+	}
+	last_score_rank = rank;
+
+	if(rank == -1) return;
+
+	memmove(scores + rank + 1, scores + rank, (10 - rank) * sizeof(struct score_entry));
+
+	if(strlen(name) > NAME_SIZE) {
+		name[NAME_SIZE] = 0;
+	}
+	sprintf(scores[rank].name, "%4s", name);
+	scores[rank].score = score;
+	scores[rank].lines = lines;
+	scores[rank].level = level;
+
+	save_scores();
 }

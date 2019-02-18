@@ -44,6 +44,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 /* interrupt handler */
 #define INTR_VECTOR		(*(volatile uint32_t*)0x3007ffc)
 
+/* battery backed RAM address */
+#define SRAM_ADDR		0xe000000
 
 /* I/O space */
 

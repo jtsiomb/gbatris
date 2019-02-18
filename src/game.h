@@ -29,6 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define VIRT_COLS	(VIRT_WIDTH / 8)
 
 uint16_t *scrmem, *chrmem;
+uint16_t *chrmem_top;
 
 long tick_interval;
 

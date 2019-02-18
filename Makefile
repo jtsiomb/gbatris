@@ -5,8 +5,6 @@ dep = $(src:.c=.d)
 name = gbatris
 elf = $(name).elf
 bin = $(name).gba
-elf_mb = $(name)_mb.elf
-bin_mb = $(name)_mb.gba
 
 ARCH = arm-none-eabi-
 
@@ -16,10 +14,12 @@ AS = $(ARCH)as
 OBJCOPY = $(ARCH)objcopy
 EMU = vbam
 
-opt = -O3 -fomit-frame-pointer -mcpu=arm7tdmi -mtune=arm7tdmi -mthumb
+opt = -O3 -fomit-frame-pointer -mcpu=arm7tdmi -mtune=arm7tdmi -mthumb -mthumb-interwork
 #dbg = -g
 
 CFLAGS = $(opt) $(dbg) -pedantic -Wall
+ASFLAGS = -mthumb-interwork
+LDFLAGS = -mthumb-interwork -mthumb
 EMUFLAGS = -T 100 -f 1 --agb-print
 
 .PHONY: all
@@ -29,20 +29,16 @@ $(bin): $(elf)
 	$(OBJCOPY) -O binary $(elf) $(bin)
 	gbafix $(bin)
 
-$(bin_mb): $(elf_mb)
-	$(OBJCOPY) -O binary $(elf_mb) $(bin_mb)
-	gbafix $(bin_mb)
-
 $(elf): $(obj)
 	$(CC) -o $(elf) $(obj) -specs=gba.specs $(LDFLAGS)
-
-$(elf_mb): $(obj)
-	$(CC) -o $(elf_mb) $(obj) -specs=gba_mb.specs $(LDFLAGS)
 
 -include $(dep)
 
 %.d: %.c
 	$(CPP) $(CFLAGS) $< -MM -MT $(@:.d=.o) >$@
+
+src/scorescr.c: data/scorescr.png
+	img2tiles -o $@ -c $<
 
 .PHONY: clean
 clean:

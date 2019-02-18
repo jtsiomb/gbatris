@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "gbaregs.h"
 #include "bgtiles.h"
 #include "fontdata.h"
+#include "game.h"
 
 
 static const unsigned char blkcols[][3] = {
@@ -50,7 +51,11 @@ static const unsigned char blktile_pal_value[] = {
 	0, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 27, 28, 29, 30, 31
 };
 
+extern unsigned char scorescr_tiles[];
+extern int scorescr_num_tiles;
+
 #define TILE_SIZE		0x20
+#define ADDR_TO_TILE(x)		(((uint32_t)(x) - (uint32_t)chrmem) / TILE_SIZE)
 
 void setup_tileset(void *chrmem)
 {
@@ -68,6 +73,7 @@ void setup_tileset(void *chrmem)
 	}
 
 	/* block tile */
+	tile_block_start = ADDR_TO_TILE(dest);
 	src = blktile_pixels;
 	for(i=0; i<TILE_SIZE / 2; i++) {
 		*dest++ = (uint16_t)src[0] | ((uint16_t)src[1] << 4) |
@@ -76,6 +82,7 @@ void setup_tileset(void *chrmem)
 	}
 
 	/* font tiles */
+	tile_font_start = TILE_FONT_START;
 	dest = (uint16_t*)((char*)chrmem + TILE_FONT_START * TILE_SIZE);
 	src = fontdata;
 	for(i=0; i<FONT_COUNT; i++) {
@@ -91,15 +98,40 @@ void setup_tileset(void *chrmem)
 		}
 	}
 
-	/* make palettes */
-	cptr = (uint16_t*)CRAM_BG_ADDR;
-	for(i=0; i<FIRST_PIECE_PAL; i++) {
-		for(j=0; j<16; j++) {
-			int v = (j << 1) | (j >> 3);
-			*cptr++ = v | (v << 5) | (v << 10);
+	/* tiles for the menus */
+	tile_scorescr_start = ADDR_TO_TILE(dest);
+	src = scorescr_tiles;
+	for(i=0; i<scorescr_num_tiles; i++) {
+		for(j=0; j<TILE_SIZE / 2; j++) {
+			uint16_t p4;
+			unsigned char pp = *src++;
+			pp = (pp >> 4) | (pp << 4);
+			p4 = (uint16_t)pp;
+			pp = *src++;
+			pp = (pp >> 4) | (pp << 4);
+			p4 |= (uint16_t)pp << 8;
+			*dest++ = p4;
 		}
 	}
 
+	chrmem_top = dest;
+
+	/* make palettes */
+	cptr = (uint16_t*)CRAM_BG_ADDR;
+	for(i=0; i<16; i++) {
+		int v = (i << 1) | (i >> 3);
+		*cptr = v | (v << 5) | (v << 10);
+		v = ~v & 0x1f;
+		cptr[16] = v | (v << 5) | (v << 10);
+		cptr++;
+	}
+
+	cptr = (uint16_t*)CRAM_BG_ADDR + PAL_SCORE * 16;
+	for(i=0; i<16; i++) {
+		*cptr++ = i < 8 ? 0x7fff : 0;
+	}
+
+	cptr = (uint16_t*)CRAM_BG_ADDR + FIRST_BLOCK_PAL * 16;
 	for(i=0; i<NUM_BLKCOLS; i++) {
 		int cr = blkcols[i][0];
 		int cg = blkcols[i][1];

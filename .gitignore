@@ -4,3 +4,4 @@
 *.elf
 *.gba
 data/
+src/scorescr.c

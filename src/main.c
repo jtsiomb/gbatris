@@ -27,6 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 static int handle_keys(unsigned long msec);
 void splash_screen(void);
+void score_screen(void);
 
 int main(void)
 {
@@ -48,6 +49,8 @@ int main(void)
 	chrmem = (uint16_t*)VRAM_CHR_BLOCK_ADDR(CHR_BASE_BLOCK);
 
 	setup_tileset(chrmem);
+	score_screen();
+
 	init_game();
 
 	for(;;) {
@@ -72,7 +75,7 @@ static int handle_keys(unsigned long msec)
 {
 	static uint16_t prevstate;
 	static unsigned long first_press[4], last_inp[4];
-	static const char input[] = {'d', 'a', '\n', 's'};
+	static const char input[] = {'d', 'a', '#', 's'};
 
 	int i, upd = 0;
 	uint16_t keystate, keydelta;
@@ -95,6 +98,10 @@ static int handle_keys(unsigned long msec)
 	}
 	if(PRESS(KEY_SELECT)) {
 		game_input('\b');
+		upd = 1;
+	}
+	if(PRESS(KEY_UP)) {
+		game_input('\n');
 		upd = 1;
 	}
 

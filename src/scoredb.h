@@ -18,7 +18,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef SCOREDB_H_
 #define SCOREDB_H_
 
-int save_score(int score, int lines, int level);
-int print_scores(int num);
+#define NAME_SIZE	4
+
+struct score_entry {
+	char name[8];
+	uint32_t score;
+	uint16_t lines;
+	uint8_t level, unused;
+} __attribute__((packed));
+
+struct score_entry scores[10];
+
+int last_score_rank;
+
+int load_scores(void);
+void save_scores(void);
+void save_score(char *name, int score, int lines, int level);
 
 #endif	/* SCOREDB_H_ */

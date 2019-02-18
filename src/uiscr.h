@@ -15,32 +15,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#include <string.h>
-#include "gbaregs.h"
-#include "timer.h"
+#ifndef UISCR_H_
+#define UISCR_H_
 
-#define LOGO_SIZE	(240 * 160 * 2)
-#define MSGLOGO_TIME	2000
+void splash_screen(void);
+void score_screen(void);
 
-extern unsigned char msglogo_pixels[];
-extern unsigned char gbatris_pixels[];
+void draw_str(int x, int y, const char *s, int pal);
 
-void splash_screen(void)
-{
-	unsigned long start;
-	void *fbptr = (void*)VRAM_LFB_FB0_ADDR;
-
-	/* mode 3 (240x160 16bpp) */
-	REG_DISPCNT = 3 | DISPCNT_BG2;
-
-	memcpy(fbptr, msglogo_pixels, LOGO_SIZE);
-	start = timer_msec;
-
-	while(timer_msec - start < MSGLOGO_TIME);
-
-	while(REG_VCOUNT < 160);
-	memcpy(fbptr, gbatris_pixels, LOGO_SIZE);
-
-	while(REG_KEYINPUT & KEY_START);
-	while((REG_KEYINPUT & KEY_START) == 0);
-}
+#endif	/* UISCR_H_ */

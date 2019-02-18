@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <inttypes.h>
 #include <assert.h>
 #include "game.h"
+#include "uiscr.h"
 #include "pieces.h"
 #include "scoredb.h"
 #include "tileset.h"
@@ -50,7 +51,6 @@ static void drawbg(void);
 static void drawpf(void);
 static void draw_line(int row, int blink);
 static void place_str(int x, int y, const char *s);
-static void draw_str(int x, int y, const char *s);
 
 
 static int pos[2], next_pos[2];
@@ -293,47 +293,53 @@ static void print_numbers(void)
 	} else {
 		sprintf(buf, "%6d", score);
 	}
-	draw_str(11 + PF_XOFFS, 3, buf);
+	draw_str(11 + PF_XOFFS, 3, buf, 0);
 
 	sprintf(buf, "%2d", level);
-	draw_str(14 + PF_XOFFS, 7, buf);
+	draw_str(14 + PF_XOFFS, 7, buf, 0);
 
 	if(lines > 9999) {
 		sprintf(buf, "%5d", lines);
 	} else {
 		sprintf(buf, "%4d", lines);
 	}
-	draw_str(12 + PF_XOFFS, 10, buf);
+	draw_str(12 + PF_XOFFS, 10, buf, 0);
 }
 
 void game_input(int c)
 {
 	switch(c) {
 	case 'a':
-		next_pos[1] = pos[1] - 1;
-		if(collision(cur_piece, next_pos)) {
-			next_pos[1] = pos[1];
+		if(!pause) {
+			next_pos[1] = pos[1] - 1;
+			if(collision(cur_piece, next_pos)) {
+				next_pos[1] = pos[1];
+			}
 		}
 		break;
 
 	case 'd':
-		next_pos[1] = pos[1] + 1;
-		if(collision(cur_piece, next_pos)) {
-			next_pos[1] = pos[1];
+		if(!pause) {
+			next_pos[1] = pos[1] + 1;
+			if(collision(cur_piece, next_pos)) {
+				next_pos[1] = pos[1];
+			}
 		}
 		break;
 
 	case 'w':
-		prev_rot = cur_rot;
-		cur_rot = (cur_rot + 1) & 3;
-		if(collision(cur_piece, next_pos)) {
-			cur_rot = prev_rot;
+		if(!pause) {
+			prev_rot = cur_rot;
+			cur_rot = (cur_rot + 1) & 3;
+			if(collision(cur_piece, next_pos)) {
+				cur_rot = prev_rot;
+			}
 		}
 		break;
 
 	case 's':
 		/* ignore drops until the first update after a spawn */
-		if(!just_spawned) {
+		if(!just_spawned && !pause) {
 			next_pos[0] = pos[0] + 1;
 			if(collision(cur_piece, next_pos)) {
 				next_pos[0] = pos[0];
@@ -352,9 +358,10 @@ void game_input(int c)
 	case 'p':
 		if(gameover) {
 			if(score) {
-				save_score(score, lines, level);
+				/* TODO user name */
+				save_score("nuc", score, lines, level);
 			}
-			init_game();
+			score_screen();
 		} else {
 			pause ^= 1;
 		}
@@ -362,9 +369,10 @@ void game_input(int c)
 
 	case '\b':
 		if(score) {
-			save_score(score, lines, level);
+			/* TODO username */
+			save_score("nuc", score, lines, level);
 		}
-		init_game();
+		score_screen();
 		break;
 
 	default:
@@ -432,7 +440,7 @@ static void stick(int piece, const int *pos)
 		p++;
 
 		pfline = scr + (y + PF_YOFFS) * SCR_COLS + PF_XOFFS;
-		pfline[x] = TILE_BLOCK | BGTILE_PAL(piece + FIRST_PIECE_PAL);
+		pfline[x] = TILE_BLOCK | BGTILE_PAL(piece + FIRST_BLOCK_PAL);
 
 		nblank = 0;
 		for(j=0; j<PF_COLS; j++) {
@@ -507,7 +515,7 @@ static void draw_piece(int piece, const int *pos, int rot, int mode)
 		pal = 0;
 	} else {
 		tile = TILE_BLOCK;
-		pal = FIRST_PIECE_PAL + piece;
+		pal = FIRST_BLOCK_PAL + piece;
 	}
 	tval = tile | BGTILE_PAL(pal);
 
@@ -578,16 +586,6 @@ static void place_str(int x, int y, const char *s)
 		*dptr++ = *s++;
 	}
 }
-
-static void draw_str(int x, int y, const char *s)
-{
-	uint16_t *dptr = scrmem + y * VIRT_COLS + x;
-
-	while(*s) {
-		*dptr++ = *s++;
-	}
-}
-
 
 void dbgblock(int x, int y, int pal)
 {

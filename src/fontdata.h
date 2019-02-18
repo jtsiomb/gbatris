@@ -2,7 +2,7 @@
 #define FONTDATA_H_
 
 #define FONT_START	32
-#define FONT_COUNT	58
+#define FONT_COUNT	59
 
 static unsigned char fontdata[] = {
 

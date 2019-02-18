@@ -43,7 +43,25 @@ enum {
 
 	TILE_FONT_START = 32
 };
-#define FIRST_PIECE_PAL		8
+
+#define FIRST_BLOCK_PAL		8
+
+enum {
+	PAL_GREY,
+	PAL_INV,
+	PAL_SCORE,
+
+	PAL_BLKL = FIRST_BLOCK_PAL,
+	PAL_BLKJ,
+	PAL_BLKI,
+	PAL_BLKO,
+	PAL_BLKZ,
+	PAL_BLKS,
+	PAL_BLKT
+};
+
+
+int tile_block_start, tile_font_start, tile_scorescr_start;
 
 void setup_tileset(void *chrmem);
 
