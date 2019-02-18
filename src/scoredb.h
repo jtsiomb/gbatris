@@ -34,5 +34,6 @@ int last_score_rank;
 int load_scores(void);
 void save_scores(void);
 void save_score(char *name, int score, int lines, int level);
+int is_highscore(int score);
 
 #endif	/* SCOREDB_H_ */

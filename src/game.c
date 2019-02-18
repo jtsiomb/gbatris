@@ -358,8 +358,10 @@ void game_input(int c)
 	case 'p':
 		if(gameover) {
 			if(score) {
-				/* TODO user name */
-				save_score("NUC", score, lines, level);
+				if(is_highscore(score)) {
+					char *name = name_screen(score);
+					save_score(name, score, lines, level);
+				}
 			}
 			score_screen();
 		} else {
@@ -369,8 +371,10 @@ void game_input(int c)
 
 	case '\b':
 		if(score) {
-			/* TODO username */
-			save_score("NUC", score, lines, level);
+			if(is_highscore(score)) {
+				char *name = name_screen(score);
+				save_score(name, score, lines, level);
+			}
 		}
 		score_screen();
 		break;

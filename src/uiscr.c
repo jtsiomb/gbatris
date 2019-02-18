@@ -27,8 +27,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define LOGO_SIZE	(240 * 160 * 2)
 #define MSGLOGO_TIME	2000
 
+static uint16_t prevstate, keystate, keydelta;
+
 extern unsigned char msglogo_pixels[];
 extern unsigned int scorescr_tilemap[];
+extern unsigned int namescr_tilemap[];
 
 void splash_screen(void)
 {
@@ -72,8 +75,6 @@ static const char *scorepal[SCR_ROWS] = {
 
 void score_screen(void)
 {
-	static uint16_t prevstate;
-	uint16_t keystate, keydelta;
 	int i, j, row, hl;
 	uint16_t *dptr = scrmem;
 	unsigned int *sptr = scorescr_tilemap;
@@ -99,19 +100,60 @@ void score_screen(void)
 		draw_str(SC_COL, row, buf, hl ? PAL_SCOREHL : PAL_SCORE);
 	}
 
+	if(last_score_rank >= 0) {
+		/* change the palette of the number tile too */
+		row = last_score_rank * 2;
+		sptr = scorescr_tilemap + row * SCR_COLS + 13;
+		dptr = scrmem + row * VIRT_COLS + 13;
+		for(i=0; i<2; i++) {
+			for(j=0; j<3; j++) {
+				uint16_t tile = sptr[j] + tile_scorescr_start;
+				dptr[j] = tile | BGTILE_PAL(PAL_SCOREHL + 1);
+			}
+			dptr += VIRT_COLS;
+			sptr += SCR_COLS;
+		}
+	}
+
 	for(;;) {
 		keystate = ~REG_KEYINPUT;
 		keydelta = keystate ^ prevstate;
 		prevstate = keystate;
 
-		if(((keydelta & KEY_START) && !(keystate & KEY_START)) ||
-				((keydelta & KEY_A) && !(keystate & KEY_A))) {
+		if(((keydelta & KEY_START) && !(keystate & KEY_START))) {
 			break;
 		}
 	}
 
 	/* we're done, prepare to start a new game */
 	init_game();
+}
+
+char *name_screen(int score)
+{
+	int i, j;
+	uint16_t *dptr = scrmem;
+	unsigned int *sptr = namescr_tilemap;
+	static char *name = "NUC";	/* TODO */
+
+	for(i=0; i<SCR_ROWS; i++) {
+		for(j=0; j<SCR_COLS; j++) {
+			*dptr++ = *sptr++ + tile_namescr_start;
+		}
+		dptr += VIRT_COLS - SCR_COLS;
+	}
+
+	for(;;) {
+		keystate = ~REG_KEYINPUT;
+		keydelta = keystate ^ prevstate;
+		prevstate = keystate;
+
+		if(((keydelta & KEY_START) && !(keystate & KEY_START))) {
+			break;
+		}
+	}
+
+	return name;
 }
 
 void draw_str(int x, int y, const char *s, int pal)

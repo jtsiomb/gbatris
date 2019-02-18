@@ -62,7 +62,7 @@ enum {
 };
 
 
-int tile_block_start, tile_font_start, tile_scorescr_start;
+int tile_block_start, tile_font_start, tile_scorescr_start, tile_namescr_start;
 
 void setup_tileset(void *chrmem);
 

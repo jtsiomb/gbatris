@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 void splash_screen(void);
 void score_screen(void);
+char *name_screen(int score);
 
 void draw_str(int x, int y, const char *s, int pal);
 

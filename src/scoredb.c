@@ -63,7 +63,7 @@ void save_score(char *name, int score, int lines, int level)
 	int i, rank = -1;
 
 	for(i=0; i<10; i++) {
-		if(scores[i].score < score) {
+		if(scores[i].score <= score) {
 			rank = i;
 			break;
 		}
@@ -83,6 +83,11 @@ void save_score(char *name, int score, int lines, int level)
 	scores[rank].level = level;
 
 	save_scores();
+}
+
+int is_highscore(int score)
+{
+	return scores[9].score <= score;
 }
 
 static void sramcpy(void *dst, void *src, int size)

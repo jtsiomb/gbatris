@@ -53,6 +53,8 @@ static const unsigned char blktile_pal_value[] = {
 
 extern unsigned char scorescr_tiles[];
 extern int scorescr_num_tiles;
+extern unsigned char namescr_tiles[];
+extern int namescr_num_tiles;
 
 #define TILE_SIZE		0x20
 #define ADDR_TO_TILE(x)		(((uint32_t)(x) - (uint32_t)chrmem) / TILE_SIZE)
@@ -114,6 +116,21 @@ void setup_tileset(void *chrmem)
 		}
 	}
 
+	tile_namescr_start = ADDR_TO_TILE(dest);
+	src = namescr_tiles;
+	for(i=0; i<namescr_num_tiles; i++) {
+		for(j=0; j<TILE_SIZE / 2; j++) {
+			uint16_t p4;
+			unsigned char pp = *src++;
+			pp = (pp >> 4) | (pp << 4);
+			p4 = (uint16_t)pp;
+			pp = *src++;
+			pp = (pp >> 4) | (pp << 4);
+			p4 |= (uint16_t)pp << 8;
+			*dest++ = p4;
+		}
+	}
+
 	chrmem_top = dest;
 
 	/* make palettes */
@@ -133,6 +150,10 @@ void setup_tileset(void *chrmem)
 	/* PAL_SCOREHL */
 	for(i=0; i<16; i++) {
 		*cptr++ = i < 8 ? 0x01ff : 0;
+	}
+	for(i=0; i<16; i++) {
+		int v = (i << 1) | (i >> 3);
+		*cptr++ = ((v << 4) & 0x1e0) | v;
 	}
 
 	cptr = (uint16_t*)CRAM_BG_ADDR + FIRST_BLOCK_PAL * 16;

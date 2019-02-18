@@ -1,6 +1,7 @@
 src = $(wildcard src/*.c)
 ssrc = $(wildcard src/*.s)
-obj = $(src:.c=.o) $(ssrc:.s=.o)
+dataobj = data/scorescr.o data/namescr.o
+obj = $(src:.c=.o) $(ssrc:.s=.o) $(dataobj)
 dep = $(src:.c=.d)
 name = gbatris
 elf = $(name).elf
@@ -37,7 +38,7 @@ $(elf): $(obj)
 %.d: %.c
 	$(CPP) $(CFLAGS) $< -MM -MT $(@:.d=.o) >$@
 
-src/scorescr.c: data/scorescr.png
+%.c: %.png
 	img2tiles -o $@ -c $<
 
 .PHONY: clean
