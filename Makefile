@@ -14,12 +14,12 @@ AS = $(ARCH)as
 OBJCOPY = $(ARCH)objcopy
 EMU = vbam
 
-opt = -O3 -fomit-frame-pointer -mcpu=arm7tdmi -mtune=arm7tdmi -mthumb -mthumb-interwork
+opt = -O1 -fomit-frame-pointer -mcpu=arm7tdmi -mtune=arm7tdmi -mthumb -mthumb-interwork
 #dbg = -g
 
 CFLAGS = $(opt) $(dbg) -pedantic -Wall
 ASFLAGS = -mthumb-interwork
-LDFLAGS = -mthumb-interwork -mthumb
+LDFLAGS = -mthumb -mthumb-interwork
 EMUFLAGS = -T 100 -f 1 --agb-print
 
 .PHONY: all

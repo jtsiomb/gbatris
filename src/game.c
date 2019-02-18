@@ -359,7 +359,7 @@ void game_input(int c)
 		if(gameover) {
 			if(score) {
 				/* TODO user name */
-				save_score("nuc", score, lines, level);
+				save_score("NUC", score, lines, level);
 			}
 			score_screen();
 		} else {
@@ -370,7 +370,7 @@ void game_input(int c)
 	case '\b':
 		if(score) {
 			/* TODO username */
-			save_score("nuc", score, lines, level);
+			save_score("NUC", score, lines, level);
 		}
 		score_screen();
 		break;

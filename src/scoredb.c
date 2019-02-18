@@ -19,14 +19,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdlib.h>
 #include <string.h>
 #include "scoredb.h"
+#include "debug.h"
 #include "gbaregs.h"
 
 #define MAGIC "GBATRIS1"
 #define SCORE_OFFS	8
 
-void read_sram(int sram_offs, void *buf, int size);
-void write_sram(int sram_offs, void *buf, int size);
 
+#define read_sram(offs, buf, sz) \
+	sramcpy(buf, (unsigned char*)SRAM_ADDR + (offs), sz)
+#define write_sram(offs, buf, sz) \
+	sramcpy((unsigned char*)SRAM_ADDR + (offs), buf, sz)
+
+static void sramcpy(void *dst, void *src, int size);
+
+int last_score_rank = -1;
 
 int load_scores(void)
 {
@@ -36,7 +43,7 @@ int load_scores(void)
 	read_sram(0, magic, 8);
 	if(memcmp(magic, MAGIC, sizeof magic) != 0) {
 		for(i=0; i<10; i++) {
-			memcpy(scores[i].name, "--- ", NAME_SIZE + 1);
+			memcpy(scores[i].name, "----", NAME_SIZE + 1);
 		}
 		return -1;
 	}
@@ -65,7 +72,7 @@ void save_score(char *name, int score, int lines, int level)
 
 	if(rank == -1) return;
 
-	memmove(scores + rank + 1, scores + rank, (10 - rank) * sizeof(struct score_entry));
+	memmove(scores + rank + 1, scores + rank, (9 - rank) * sizeof(struct score_entry));
 
 	if(strlen(name) > NAME_SIZE) {
 		name[NAME_SIZE] = 0;
@@ -76,4 +83,13 @@ void save_score(char *name, int score, int lines, int level)
 	scores[rank].level = level;
 
 	save_scores();
+}
+
+static void sramcpy(void *dst, void *src, int size)
+{
+	unsigned char *sptr = src;
+	unsigned char *dptr = dst;
+	while(size-- > 0) {
+		*dptr++ = *sptr++;
+	}
 }

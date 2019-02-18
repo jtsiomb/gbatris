@@ -27,7 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 static const unsigned char blkcols[][3] = {
 	{31, 20, 0},
 	{5, 31, 0},
-	{20, 31, 0},
+	{20, 20, 31},
 	{31, 31, 0},
 	{0, 31, 31},
 	{31, 15, 31},
@@ -129,6 +129,10 @@ void setup_tileset(void *chrmem)
 	cptr = (uint16_t*)CRAM_BG_ADDR + PAL_SCORE * 16;
 	for(i=0; i<16; i++) {
 		*cptr++ = i < 8 ? 0x7fff : 0;
+	}
+	/* PAL_SCOREHL */
+	for(i=0; i<16; i++) {
+		*cptr++ = i < 8 ? 0x01ff : 0;
 	}
 
 	cptr = (uint16_t*)CRAM_BG_ADDR + FIRST_BLOCK_PAL * 16;

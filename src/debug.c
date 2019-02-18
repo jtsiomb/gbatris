@@ -15,28 +15,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-#ifndef GAME_H_
-#define GAME_H_
+#include <stdio.h>
+#include <stdarg.h>
+#include "debug.h"
 
-#define SCR_WIDTH	240
-#define SCR_HEIGHT	160
-#define VIRT_WIDTH	256
-#define VIRT_HEIGHT	256
+__attribute__((target("arm")))
+void print_vba(const char *str, ...)
+{
+	char buf[128];
+	va_list arg_list;
 
-#define SCR_ROWS	(SCR_HEIGHT / 8)
-#define SCR_COLS	(SCR_WIDTH / 8)
-#define VIRT_ROWS	(VIRT_HEIGHT / 8)
-#define VIRT_COLS	(VIRT_WIDTH / 8)
+	va_start(arg_list, str);
+	vsnprintf(buf, 128, str, arg_list);
+	va_end(arg_list);
 
-uint16_t *scrmem, *chrmem;
-uint16_t *chrmem_top;
-
-long tick_interval;
-
-int init_game(void);
-void cleanup_game(void);
-
-long update(long msec);
-void game_input(int c);
-
-#endif	/* GAME_H_ */
+	__asm__ __volatile__(
+		"mov r0, %0\n\t"
+		"swi 0xff0000\n\t" :
+		: "r" (buf)
+		: "r0"
+	);
+}

@@ -47,11 +47,34 @@ void splash_screen(void)
 #define NM_COL	16
 #define SC_COL	22
 
+static const char *scorepal[SCR_ROWS] = {
+	"<<<<<<<<<<<<>00000000000000000",
+	"<<<<<<<<<<<<>00000000000000000",
+	"888888888888>00000000000000000",
+	"888888888888>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000",
+	"999999999999>00000000000000000",
+	"999999999999>00000000000000000",
+	">>>>>>>>>>>>>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000",
+	"000000000000>00000000000000000"
+};
+
 void score_screen(void)
 {
 	static uint16_t prevstate;
 	uint16_t keystate, keydelta;
-	int i, j;
+	int i, j, row, hl;
 	uint16_t *dptr = scrmem;
 	unsigned int *sptr = scorescr_tilemap;
 	char buf[32];
@@ -60,16 +83,20 @@ void score_screen(void)
 
 	for(i=0; i<SCR_ROWS; i++) {
 		for(j=0; j<SCR_COLS; j++) {
-			*dptr++ = *sptr++ + tile_scorescr_start;
+			uint16_t pal = BGTILE_PAL(scorepal[i][j] - '0');
+			*dptr++ = (*sptr++ + tile_scorescr_start) | pal;
 		}
 		dptr += VIRT_COLS - SCR_COLS;
 	}
 
 	for(i=0; i<10; i++) {
-		int row = i * 2 + 1;
-		draw_str(NM_COL, row, scores[i].name, PAL_SCORE);
+		if(scores[i].score <= 0) break;
+
+		row = i * 2 + 1;
+		hl = i == last_score_rank;
+		draw_str(NM_COL, row, scores[i].name, hl ? PAL_SCOREHL : PAL_SCORE);
 		sprintf(buf, "%7u", (unsigned int)scores[i].score);
-		draw_str(SC_COL, row, buf, PAL_SCORE);
+		draw_str(SC_COL, row, buf, hl ? PAL_SCOREHL : PAL_SCORE);
 	}
 
 	for(;;) {
