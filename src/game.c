@@ -28,6 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "tileset.h"
 #include "timer.h"
 #include "gbaregs.h"
+#include "sound.h"
 
 enum { ERASE_PIECE, DRAW_PIECE };
 
@@ -457,6 +458,8 @@ static void stick(int piece, const int *pos)
 			complines[num_complines++] = y;
 		}
 	}
+
+	snd_stick();
 
 	if(num_complines) {
 		addscore(num_complines);

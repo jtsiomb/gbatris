@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "game.h"
 #include "tileset.h"
 #include "timer.h"
+#include "keyb.h"
 #include "intr.h"
 
 #define SCR_BASE_BLOCK	0
@@ -66,41 +67,35 @@ int main(void)
 }
 
 
-#define PRESS(key)	((keystate & (key)) && (keydelta & (key)))
-
 #define REPEAT_START		500
 #define REPEAT_INTERVAL		75
 
 static int handle_keys(unsigned long msec)
 {
-	static uint16_t prevstate;
 	static unsigned long first_press[4], last_inp[4];
 	static const char input[] = {'d', 'a', '#', 's'};
 
 	int i, upd = 0;
-	uint16_t keystate, keydelta;
 
-	keystate = ~REG_KEYINPUT;
-	keydelta = keystate ^ prevstate;
-	prevstate = keystate;
+	update_keyb();
 
-	if(PRESS(KEY_A)) {
+	if(KEYPRESS(KEY_A)) {
 		game_input('w');
 		upd = 1;
 	}
-	if(PRESS(KEY_B)) {
+	if(KEYPRESS(KEY_B)) {
 		game_input('\n');
 		upd = 1;
 	}
-	if(PRESS(KEY_START)) {
+	if(KEYPRESS(KEY_START)) {
 		game_input('p');
 		upd = 1;
 	}
-	if(PRESS(KEY_SELECT)) {
+	if(KEYPRESS(KEY_SELECT)) {
 		game_input('\b');
 		upd = 1;
 	}
-	if(PRESS(KEY_UP)) {
+	if(KEYPRESS(KEY_UP)) {
 		game_input('\n');
 		upd = 1;
 	}

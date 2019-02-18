@@ -21,13 +21,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "game.h"
 #include "tileset.h"
 #include "timer.h"
+#include "keyb.h"
 #include "scoredb.h"
 #include "uiscr.h"
+#include "sound.h"
 
 #define LOGO_SIZE	(240 * 160 * 2)
 #define MSGLOGO_TIME	2000
-
-static uint16_t prevstate, keystate, keydelta;
 
 extern unsigned char msglogo_pixels[];
 extern unsigned int scorescr_tilemap[];
@@ -116,15 +116,12 @@ void score_screen(void)
 	}
 
 	for(;;) {
-		keystate = ~REG_KEYINPUT;
-		keydelta = keystate ^ prevstate;
-		prevstate = keystate;
+		update_keyb();
 
-		if(((keydelta & KEY_START) && !(keystate & KEY_START))) {
-			break;
-		}
+		if(KEYPRESS(KEY_START)) break;
 	}
 
+	snd_test();
 	/* we're done, prepare to start a new game */
 	init_game();
 }
@@ -144,13 +141,9 @@ char *name_screen(int score)
 	}
 
 	for(;;) {
-		keystate = ~REG_KEYINPUT;
-		keydelta = keystate ^ prevstate;
-		prevstate = keystate;
+		update_keyb();
 
-		if(((keydelta & KEY_START) && !(keystate & KEY_START))) {
-			break;
-		}
+		if(KEYPRESS(KEY_START)) break;
 	}
 
 	return name;
