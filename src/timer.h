@@ -30,4 +30,6 @@ volatile unsigned long timer_msec;
 
 void reset_msec_timer(void);
 
+void delay(unsigned long ms);
+
 #endif	/* _TIMER_H_ */

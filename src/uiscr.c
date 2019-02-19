@@ -116,12 +116,12 @@ void score_screen(void)
 	}
 
 	for(;;) {
+		while(REG_VCOUNT < 160);
 		update_keyb();
 
 		if(KEYPRESS(KEY_START)) break;
 	}
 
-	snd_test();
 	/* we're done, prepare to start a new game */
 	init_game();
 }
@@ -141,6 +141,7 @@ char *name_screen(int score)
 	}
 
 	for(;;) {
+		while(REG_VCOUNT < 160);
 		update_keyb();
 
 		if(KEYPRESS(KEY_START)) break;

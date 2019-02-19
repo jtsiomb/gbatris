@@ -38,6 +38,11 @@ void reset_msec_timer(void)
 	unmask(INTR_TIMER0);
 }
 
+void delay(unsigned long ms)
+{
+	unsigned long end = timer_msec + ms;
+	while(timer_msec < end);
+}
 
 static void timer_intr(void)
 {

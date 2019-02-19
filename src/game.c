@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <assert.h>
 #include "game.h"
 #include "uiscr.h"
-#include "pieces.h"
+#include "blocks.h"
 #include "scoredb.h"
 #include "tileset.h"
 #include "timer.h"
@@ -41,13 +41,14 @@ enum { ERASE_PIECE, DRAW_PIECE };
 
 uint16_t scr[SCR_COLS * SCR_ROWS];
 
+static void update_cur_block(void);
 static void addscore(int nlines);
 static void print_numbers(void);
 static int spawn(void);
-static int collision(int piece, const int *pos);
-static void stick(int piece, const int *pos);
+static int collision(int block, const int *pos);
+static void stick(int block, const int *pos);
 static void erase_completed(void);
-static void draw_piece(int piece, const int *pos, int rot, int mode);
+static void draw_block(int block, const int *pos, int rot, int mode);
 static void drawbg(void);
 static void drawpf(void);
 static void draw_line(int row, int blink);
@@ -55,7 +56,7 @@ static void place_str(int x, int y, const char *s);
 
 
 static int pos[2], next_pos[2];
-static int cur_piece, next_piece;
+static int cur_block, next_block;
 static int cur_rot, prev_rot;
 static int complines[4];
 static int num_complines;
@@ -106,8 +107,8 @@ int init_game(void)
 	num_complines = 0;
 	score = level = lines = 0;
 	tick_interval = level_speed[0];
-	cur_piece = -1;
-	next_piece = rand() % NUM_PIECES;
+	cur_block = -1;
+	next_block = rand() % NUM_BLOCKS;
 
 	memset(scrmem, 0, VIRT_COLS * VIRT_ROWS * 2);
 
@@ -237,13 +238,12 @@ long update(long msec)
 
 	/* fall */
 	while(dt >= tick_interval) {
-		if(cur_piece >= 0) {
+		if(cur_block >= 0) {
 			just_spawned = 0;
 			next_pos[0] = pos[0] + 1;
-			if(collision(cur_piece, next_pos)) {
+			if(collision(cur_block, next_pos)) {
 				next_pos[0] = pos[0];
-				stick(cur_piece, next_pos);
-				cur_piece = -1;
+				stick(cur_block, next_pos);
 				return 0;
 			}
 		} else {
@@ -258,14 +258,20 @@ long update(long msec)
 		prev_tick = msec;
 	}
 
-	if(cur_piece >= 0 && (memcmp(pos, next_pos, sizeof pos) != 0 || cur_rot != prev_rot)) {
-		draw_piece(cur_piece, pos, prev_rot, ERASE_PIECE);
-		draw_piece(cur_piece, next_pos, cur_rot, DRAW_PIECE);
+	update_cur_block();
+	return tick_interval - dt;
+}
+
+static void update_cur_block(void)
+{
+	if(cur_block < 0) return;
+
+	if(memcmp(pos, next_pos, sizeof pos) != 0 || cur_rot != prev_rot) {
+		draw_block(cur_block, pos, prev_rot, ERASE_PIECE);
+		draw_block(cur_block, next_pos, cur_rot, DRAW_PIECE);
 		memcpy(pos, next_pos, sizeof pos);
 		prev_rot = cur_rot;
 	}
-
-	return tick_interval - dt;
 }
 
 static void addscore(int nlines)
@@ -313,7 +319,7 @@ void game_input(int c)
 	case 'a':
 		if(!pause) {
 			next_pos[1] = pos[1] - 1;
-			if(collision(cur_piece, next_pos)) {
+			if(collision(cur_block, next_pos)) {
 				next_pos[1] = pos[1];
 			}
 		}
@@ -322,7 +328,7 @@ void game_input(int c)
 	case 'd':
 		if(!pause) {
 			next_pos[1] = pos[1] + 1;
-			if(collision(cur_piece, next_pos)) {
+			if(collision(cur_block, next_pos)) {
 				next_pos[1] = pos[1];
 			}
 		}
@@ -332,7 +338,7 @@ void game_input(int c)
 		if(!pause) {
 			prev_rot = cur_rot;
 			cur_rot = (cur_rot + 1) & 3;
-			if(collision(cur_piece, next_pos)) {
+			if(collision(cur_block, next_pos)) {
 				cur_rot = prev_rot;
 			}
 		}
@@ -342,18 +348,23 @@ void game_input(int c)
 		/* ignore drops until the first update after a spawn */
 		if(!just_spawned && !pause) {
 			next_pos[0] = pos[0] + 1;
-			if(collision(cur_piece, next_pos)) {
+			if(collision(cur_block, next_pos)) {
 				next_pos[0] = pos[0];
+				update_cur_block();
+				stick(cur_block, next_pos);	/* stick immediately */
+				just_spawned = 1;
 			}
 		}
 		break;
 
 	case '\n':
 		next_pos[0] = pos[0] + 1;
-		while(!collision(cur_piece, next_pos)) {
+		while(!collision(cur_block, next_pos)) {
 			next_pos[0]++;
 		}
 		next_pos[0]--;
+		update_cur_block();
+		stick(cur_block, next_pos);	/* stick immediately */
 		break;
 
 	case 'p':
@@ -391,21 +402,21 @@ static int spawn(void)
 	int r, tries = 2;
 
 	do {
-		r = rand() % NUM_PIECES;
-	} while(tries-- > 0 && (r | cur_piece | next_piece) == cur_piece);
+		r = rand() % NUM_BLOCKS;
+	} while(tries-- > 0 && (r | cur_block | next_block) == cur_block);
 
-	draw_piece(next_piece, preview_pos, 0, ERASE_PIECE);
-	draw_piece(r, preview_pos, 0, DRAW_PIECE);
+	draw_block(next_block, preview_pos, 0, ERASE_PIECE);
+	draw_block(r, preview_pos, 0, DRAW_PIECE);
 
-	cur_piece = next_piece;
-	next_piece = r;
+	cur_block = next_block;
+	next_block = r;
 
 	prev_rot = cur_rot = 0;
-	pos[0] = piece_spawnpos[cur_piece][0];
+	pos[0] = block_spawnpos[cur_block][0];
 	next_pos[0] = pos[0] + 1;
-	pos[1] = next_pos[1] = PF_COLS / 2 + piece_spawnpos[cur_piece][1];
+	pos[1] = next_pos[1] = PF_COLS / 2 + block_spawnpos[cur_block][1];
 
-	if(collision(cur_piece, next_pos)) {
+	if(collision(cur_block, next_pos)) {
 		return -1;
 	}
 
@@ -413,10 +424,10 @@ static int spawn(void)
 	return 0;
 }
 
-static int collision(int piece, const int *pos)
+static int collision(int block, const int *pos)
 {
 	int i;
-	unsigned char *p = pieces[piece][cur_rot];
+	unsigned char *p = blocks[block][cur_rot];
 
 	for(i=0; i<4; i++) {
 		int x = PF_XOFFS + pos[1] + BLKX(*p);
@@ -431,13 +442,14 @@ static int collision(int piece, const int *pos)
 	return 0;
 }
 
-static void stick(int piece, const int *pos)
+static void stick(int block, const int *pos)
 {
 	int i, j, nblank;
 	uint16_t *pfline;
-	unsigned char *p = pieces[piece][cur_rot];
+	unsigned char *p = blocks[block][cur_rot];
 
 	num_complines = 0;
+	cur_block = -1;
 
 	for(i=0; i<4; i++) {
 		int x = pos[1] + BLKX(*p);
@@ -445,7 +457,7 @@ static void stick(int piece, const int *pos)
 		p++;
 
 		pfline = scr + (y + PF_YOFFS) * SCR_COLS + PF_XOFFS;
-		pfline[x] = TILE_BLOCK | BGTILE_PAL(piece + FIRST_BLOCK_PAL);
+		pfline[x] = TILE_BLOCK | BGTILE_PAL(block + FIRST_BLOCK_PAL);
 
 		nblank = 0;
 		for(j=0; j<PF_COLS; j++) {
@@ -511,18 +523,18 @@ static void erase_completed(void)
 	drawpf();
 }
 
-static void draw_piece(int piece, const int *pos, int rot, int mode)
+static void draw_block(int block, const int *pos, int rot, int mode)
 {
 	int i, tile, pal;
 	uint16_t tval;
-	unsigned char *p = pieces[piece][rot];
+	unsigned char *p = blocks[block][rot];
 
 	if(mode == ERASE_PIECE) {
 		tile = TILE_PF;
 		pal = 0;
 	} else {
 		tile = TILE_BLOCK;
-		pal = FIRST_BLOCK_PAL + piece;
+		pal = FIRST_BLOCK_PAL + block;
 	}
 	tval = tile | BGTILE_PAL(pal);
 
