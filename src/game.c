@@ -206,6 +206,10 @@ long update(long msec)
 		int i, row = PF_ROWS - gameover;
 		uint16_t *ptr;
 
+		if(dt < GAMEOVER_FILL_RATE) {
+			return GAMEOVER_FILL_RATE - dt;
+		}
+
 		if(row >= 0) {
 			ptr = scr + (row + PF_YOFFS) * SCR_COLS + PF_XOFFS;
 			for(i=0; i<PF_COLS; i++) {
@@ -214,6 +218,7 @@ long update(long msec)
 			draw_line(row, 1);
 
 			gameover++;
+			prev_tick = msec;
 			return GAMEOVER_FILL_RATE;
 		}
 
@@ -321,6 +326,8 @@ void game_input(int c)
 			next_pos[1] = pos[1] - 1;
 			if(collision(cur_block, next_pos)) {
 				next_pos[1] = pos[1];
+			} else {
+				snd_shift();
 			}
 		}
 		break;
@@ -330,6 +337,8 @@ void game_input(int c)
 			next_pos[1] = pos[1] + 1;
 			if(collision(cur_block, next_pos)) {
 				next_pos[1] = pos[1];
+			} else {
+				snd_shift();
 			}
 		}
 		break;
@@ -340,31 +349,34 @@ void game_input(int c)
 			cur_rot = (cur_rot + 1) & 3;
 			if(collision(cur_block, next_pos)) {
 				cur_rot = prev_rot;
+			} else {
+				snd_rot();
 			}
 		}
 		break;
 
 	case 's':
 		/* ignore drops until the first update after a spawn */
-		if(!just_spawned && !pause) {
+		if(cur_block >= 0 && !just_spawned && !pause) {
 			next_pos[0] = pos[0] + 1;
 			if(collision(cur_block, next_pos)) {
 				next_pos[0] = pos[0];
 				update_cur_block();
 				stick(cur_block, next_pos);	/* stick immediately */
-				just_spawned = 1;
 			}
 		}
 		break;
 
 	case '\n':
-		next_pos[0] = pos[0] + 1;
-		while(!collision(cur_block, next_pos)) {
-			next_pos[0]++;
+		if(cur_block >= 0) {
+			next_pos[0] = pos[0] + 1;
+			while(!collision(cur_block, next_pos)) {
+				next_pos[0]++;
+			}
+			next_pos[0]--;
+			update_cur_block();
+			stick(cur_block, next_pos);	/* stick immediately */
 		}
-		next_pos[0]--;
-		update_cur_block();
-		stick(cur_block, next_pos);	/* stick immediately */
 		break;
 
 	case 'p':

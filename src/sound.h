@@ -18,7 +18,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef SOUND_H_
 #define SOUND_H_
 
+void init_sound(void);
+
 void snd_stick(void);
+void snd_shift(void);
+void snd_rot(void);
 
 void snd_test(void);
 

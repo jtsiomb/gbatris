@@ -32,4 +32,16 @@ void reset_msec_timer(void);
 
 void delay(unsigned long ms);
 
+#ifdef __thumb__
+#define udelay(x)  asm volatile ( \
+	"0: sub %0, %0, #1\n\t" \
+	"bne 0b\n\t" \
+	:: "r"(x) : "cc")
+#else
+#define udelay(x)  asm volatile ( \
+	"0: subs %0, %0, #1\n\t" \
+	"bne 0b\n\t" \
+	:: "r"(x) : "cc")
+#endif
+
 #endif	/* _TIMER_H_ */

@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "timer.h"
 #include "keyb.h"
 #include "intr.h"
+#include "sound.h"
 
 #define SCR_BASE_BLOCK	0
 #define CHR_BASE_BLOCK	2
@@ -39,6 +40,7 @@ int main(void)
 	reset_msec_timer();
 	set_intr();
 
+	init_sound();
 	splash_screen();
 
 	/* set mode 0 and enable BG0 */
@@ -60,7 +62,7 @@ int main(void)
 		msec = timer_msec;
 
 		if(handle_keys(msec) || msec >= next_upd) {
-			next_upd = update(timer_msec) + msec;
+			next_upd = msec + update(msec);
 		}
 	}
 	return 0;

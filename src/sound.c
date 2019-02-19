@@ -34,6 +34,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define WAVE_BANK(x)		(((x) & 1) << 6)
 #define WAVE_EN				0x80
 
+#define SWEEP(x)			(((x) & 7) << 4)
+#define SWEEP_INC			0
+#define SWEEP_DEC			0x08
+
 /* SOUNDxCNT_H bits */
 #define INIT				0x8000
 #define PLAY_ONCE			0x4000
@@ -75,47 +79,70 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define TOK_FREQ	800
 #define TOK_DUTY	DUTY_50
 
-void snd_stick(void)
+void init_sound(void)
 {
 	REG_SOUNDCNT_X = SND_MASTER_EN;
 	REG_SOUNDCNT_H = SYNTH_RATIO_FULL;
-	REG_SOUNDCNT_L = SNDEN(SND2) | SNDVOL(7);
-	REG_SOUND2CNT_L = RAMP_START(14) | RAMP_STEP_DUR(1) | TOK_DUTY | 25;
+}
+
+void snd_stick(void)
+{
+	REG_SOUNDCNT_L = SNDEN(SND2) | SNDEN(SND4) | SNDVOL(7);
+	REG_SOUND2CNT_L = RAMP_START(10) | RAMP_STEP_DUR(1) | TOK_DUTY | 25;
 	REG_SOUND2CNT_H = INIT | PLAY_ONCE | TOK_FREQ;
+	/* also add some noise */
+	REG_SOUND4CNT_L = RAMP_START(8) | RAMP_STEP_DUR(1) | 25;
+	REG_SOUND4CNT_H = INIT | PLAY_ONCE | F_DIV3 | SHIFT_CLK(4);
+}
+
+#define SHIFT_DUTY	DUTY_50
+#define SHIFT_FREQ	1600
+void snd_shift(void)
+{
+	REG_SOUNDCNT_L = SNDEN(SND2) | SNDVOL(2);
+	REG_SOUND2CNT_L = RAMP_START(12) | RAMP_STEP_DUR(1) | SHIFT_DUTY | 25;
+	REG_SOUND2CNT_H = INIT | PLAY_ONCE | SHIFT_FREQ;
+}
+
+#define ROT_DUTY	DUTY_50
+#define ROT_FREQ	1600
+void snd_rot(void)
+{
+	REG_SOUNDCNT_L = SNDEN(SND1) | SNDVOL(3);
+	REG_SOUND1CNT_L = SWEEP(5) | SWEEP_INC | 4;
+	REG_SOUND1CNT_H = RAMP_START(15) | RAMP_STEP_DUR(1) | ROT_DUTY | 5;
+	REG_SOUND1CNT_X = INIT | PLAY_ONCE | ROT_FREQ;
+	udelay(4);
+	REG_SOUND1CNT_X = INIT | PLAY_ONCE | ROT_FREQ;
 }
 
 void snd_test(void)
 {
-	REG_SOUNDCNT_X = SND_MASTER_EN;
-	REG_SOUNDCNT_H = SYNTH_RATIO_FULL;
+	static const unsigned char wave[] = {
+		0x02, 0x46, 0x8a, 0xce,
+		0x02, 0x46, 0x8a, 0xce,
+		0x02, 0x46, 0x8a, 0xce,
+		0x02, 0x46, 0x8a, 0xce
+	};
+	int i;
+	uint16_t *dptr, *sptr = (uint16_t*)wave;
 
-	{
-		static const unsigned char wave[] = {
-			0x02, 0x46, 0x8a, 0xce,
-			0x02, 0x46, 0x8a, 0xce,
-			0x02, 0x46, 0x8a, 0xce,
-			0x02, 0x46, 0x8a, 0xce
-		};
-		int i;
-		uint16_t *dptr, *sptr = (uint16_t*)wave;
-
-		REG_SOUNDCNT_L = SNDEN(SND3) | SNDVOL(7);
-		REG_SOUND3CNT_L = WAVE_BANK(1);
-		dptr = (uint16_t*)WAVE_RAM_PTR;
-		for(i=0; i<8; i++) {
-			*dptr++ = *sptr++;
-		}
-		REG_SOUND3CNT_L = WAVE_EN | WAVE_BANK(0);
-		REG_SOUND3CNT_H = WAVE_LEVEL_FULL;
-		REG_SOUND3CNT_X = INIT | TOK_FREQ;
-
-		delay(80);
-		for(i=0; i<7; i++) {
-			REG_SOUNDCNT_L = SNDEN(SND3) | SNDVOL(6 - i);
-			delay(20);
-		}
-		REG_SOUNDCNT_L = 0;
+	REG_SOUNDCNT_L = SNDEN(SND3) | SNDVOL(7);
+	REG_SOUND3CNT_L = WAVE_BANK(1);
+	dptr = (uint16_t*)WAVE_RAM_PTR;
+	for(i=0; i<8; i++) {
+		*dptr++ = *sptr++;
 	}
+	REG_SOUND3CNT_L = WAVE_EN | WAVE_BANK(0);
+	REG_SOUND3CNT_H = WAVE_LEVEL_FULL;
+	REG_SOUND3CNT_X = INIT | TOK_FREQ;
+
+	delay(80);
+	for(i=0; i<7; i++) {
+		REG_SOUNDCNT_L = SNDEN(SND3) | SNDVOL(6 - i);
+		delay(20);
+	}
+	REG_SOUNDCNT_L = 0;
 
 	/*
 	REG_SOUNDCNT_L = SNDEN(SND2) | SNDVOL(7);
