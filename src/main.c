@@ -55,6 +55,7 @@ int main(void)
 	score_screen();
 
 	init_game();
+	key_repeat(500, 75, KEY_LEFT | KEY_RIGHT | KEY_DOWN);
 
 	for(;;) {
 		while(REG_VCOUNT < 160);	/* wait vsync */
@@ -69,15 +70,9 @@ int main(void)
 }
 
 
-#define REPEAT_START		500
-#define REPEAT_INTERVAL		75
-
 static int handle_keys(unsigned long msec)
 {
-	static unsigned long first_press[4], last_inp[4];
-	static const char input[] = {'d', 'a', '#', 's'};
-
-	int i, upd = 0;
+	int upd = 0;
 
 	update_keyb();
 
@@ -101,23 +96,17 @@ static int handle_keys(unsigned long msec)
 		game_input('\n');
 		upd = 1;
 	}
-
-	for(i=0; i<4; i++) {
-		uint16_t bit = KEY_RIGHT << i;
-
-		if(keystate & bit) {
-			if(keydelta & bit) {
-				game_input(input[i]);
-				upd = 1;
-				first_press[i] = msec;
-			} else {
-				if(msec - first_press[i] >= REPEAT_START && msec - last_inp[i] >= REPEAT_INTERVAL) {
-					game_input(input[i]);
-					upd = 1;
-					last_inp[i] = msec;
-				}
-			}
-		}
+	if(KEYPRESS(KEY_DOWN)) {
+		game_input('s');
+		upd = 1;
+	}
+	if(KEYPRESS(KEY_LEFT)) {
+		game_input('a');
+		upd = 1;
+	}
+	if(KEYPRESS(KEY_RIGHT)) {
+		game_input('d');
+		upd = 1;
 	}
 
 	return upd;

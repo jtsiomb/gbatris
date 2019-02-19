@@ -193,6 +193,8 @@ char *name_screen(int score)
 	big_print(4, 15, PAL_VKEYB, "%d", score);
 	DRAW_NAME();
 
+	key_repeat(500, 75, KEY_LEFT | KEY_RIGHT | KEY_UP | KEY_DOWN);
+
 	for(;;) {
 		while(REG_VCOUNT < 160);
 		update_keyb();

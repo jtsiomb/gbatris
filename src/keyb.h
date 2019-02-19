@@ -25,7 +25,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 uint16_t keystate, keydelta;
 
-void update_keyb(void);
+void key_repeat(int start, int rep, uint16_t mask);
 
+void update_keyb(void);
 
 #endif	/* KEYB_H_ */
