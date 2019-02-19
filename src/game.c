@@ -368,7 +368,7 @@ void game_input(int c)
 		break;
 
 	case '\n':
-		if(cur_block >= 0) {
+		if(!pause && cur_block >= 0) {
 			next_pos[0] = pos[0] + 1;
 			while(!collision(cur_block, next_pos)) {
 				next_pos[0]++;
