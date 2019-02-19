@@ -177,8 +177,11 @@ char *name_screen(int score)
 	int curx = 0, cury = 0, next_curx = VKEYB_COLS - 1, next_cury = VKEYB_ROWS - 1;
 	uint16_t *dptr = scrmem;
 	unsigned int *sptr = namescr_tilemap;
-	static char name[5] = "NUC";
+	static char name[5];
 	int name_len = 0;
+
+	/* retrieve the last highscore name */
+	strcpy(name, scores[10].name);
 
 	for(i=0; i<SCR_ROWS; i++) {
 		for(j=0; j<SCR_COLS; j++) {

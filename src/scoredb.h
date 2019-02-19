@@ -27,7 +27,10 @@ struct score_entry {
 	uint8_t level, unused;
 } __attribute__((packed));
 
-struct score_entry scores[10];
+/* last entry is used just to keep the last entered name
+ * and present it as a default choice in the highscore UI
+ */
+struct score_entry scores[11];
 
 int last_score_rank;
 

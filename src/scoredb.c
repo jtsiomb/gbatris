@@ -45,6 +45,8 @@ int load_scores(void)
 		for(i=0; i<10; i++) {
 			memcpy(scores[i].name, "----", NAME_SIZE + 1);
 		}
+		/* scores[10] keeps the last entered name. initialize it empty */
+		scores[10].name[0] = 0;
 		return -1;
 	}
 
@@ -77,10 +79,13 @@ void save_score(char *name, int score, int lines, int level)
 	if(strlen(name) > NAME_SIZE) {
 		name[NAME_SIZE] = 0;
 	}
-	sprintf(scores[rank].name, "%4s", name);
+	sprintf(scores[rank].name, "%s", name);
 	scores[rank].score = score;
 	scores[rank].lines = lines;
 	scores[rank].level = level;
+
+	/* also copy to the last entered name slot */
+	scores[10] = scores[rank];
 
 	save_scores();
 }
