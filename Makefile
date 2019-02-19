@@ -23,6 +23,9 @@ ASFLAGS = -mthumb-interwork
 LDFLAGS = -mthumb -mthumb-interwork
 EMUFLAGS = -T 100 -f 1 --agb-print
 
+IMG2TILES = tools/img2tiles/img2tiles
+
+
 .PHONY: all
 all: $(bin) $(bin_mb)
 
@@ -38,8 +41,11 @@ $(elf): $(obj)
 %.d: %.c
 	$(CPP) $(CFLAGS) $< -MM -MT $(@:.d=.o) >$@
 
-%.c: %.png
-	img2tiles -o $@ -c $<
+%.c: %.png $(IMG2TILES)
+	$(IMG2TILES) -o $@ -c $<
+
+$(IMG2TILES):
+	$(MAKE) -C tools/img2tiles
 
 .PHONY: clean
 clean:

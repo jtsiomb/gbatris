@@ -4,4 +4,4 @@
 *.elf
 *.gba
 data/
-src/scorescr.c
+tools/img2tiles/img2tiles
