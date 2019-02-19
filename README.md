@@ -5,11 +5,11 @@ GBAtris
 
 About
 -----
-gbatris is a tetris game for the Nintendo GameBoy Advance.
+gbatris is a classic-style tetris game for the Nintendo GameBoy Advance.
 
 I always liked the original GameBoy tetris, and not any of the "improved"
 versions that where released for the GBA and the Nintendo DS. So I made gbatris
-to be as close as possible to the original GameBoy tetris gameplay-wise.
+to be as close as possible to the original GameBoy tetris.
 
   - website: http://nuclear.mutantstargoat.com/sw/gbatris
   - source repository: https://github.com/jtsiomb/gbatris
@@ -38,7 +38,26 @@ details.
 
 Download
 --------
-GBAtris is still under development, so there are not official releases yet.
+Current release of gbatris is v0.1, and is available as a gziped tarball or a
+zip archive. Both archives are identical, and contain source code, data files,
+and a pre-compiled GameBoy Advance ROM image:
+  - http://nuclear.mutantstargoat.com/sw/gbatris/gbatris-0.1.tar.gz
+  - http://nuclear.mutantstargoat.com/sw/gbatris/gbatris-0.1.zip
 
-Here is a test build if you want to try it:
-http://nuclear.mutantstargoat.com/sw/gbatris/gbatris-test1.gba
+Alternatively you may clone the latest version of the source code, directly from
+the git repository:
+
+    git clone https://github.com/jtsiomb/gbatris
+
+Build
+-----
+To build gbatris you need the devkitarm GBA toolchain from: https://devkitpro.org
+
+No libraries are used other than the GCC C runtime support libraries; just the C
+compiler, binutils, and link scripts. So if you already have a freestanding ARM
+cross-compiler (target `arm-none-eabi`), you can probably just grab the
+appropriate link script, and spec file from the devkitarm archives, and use them
+to build gbatris.
+
+Additionally, the `img2tiles` tool, which is built as part of the gbatris build
+process, depends on *libpng* and *zlib*.
