@@ -55,6 +55,7 @@ extern unsigned char scorescr_tiles[];
 extern int scorescr_num_tiles;
 extern unsigned char namescr_tiles[];
 extern int namescr_num_tiles;
+extern unsigned char namescr_cmap[][3];
 
 #define TILE_SIZE		0x20
 #define ADDR_TO_TILE(x)		(((uint32_t)(x) - (uint32_t)chrmem) / TILE_SIZE)
@@ -151,10 +152,36 @@ void setup_tileset(void *chrmem)
 	for(i=0; i<16; i++) {
 		*cptr++ = i < 8 ? 0x01ff : 0;
 	}
+	/* PAL_SCOREHL_NUM */
 	for(i=0; i<16; i++) {
 		int v = (i << 1) | (i >> 3);
 		*cptr++ = ((v << 4) & 0x1e0) | v;
 	}
+
+	/* PAL_VKEYB & PAL_VKEYB_INV */
+	for(i=0; i<16; i++) {
+		int v = namescr_cmap[i][0] * 31 / 255;
+		cptr[i] = (v << 10) | (v << 5) | v;
+	}
+	cptr[15] = 0;
+	cptr += 16;
+	for(i=0; i<16; i++) {
+		int idx = 17 - i;
+		int v = namescr_cmap[idx > 14 ? 14 : idx][0] * 31 / 255;
+		cptr[i] = (v << 10) | (v << 5) | v;
+	}
+	cptr[15] = 0x7fff;
+	cptr += 16;
+	/* PAL_VKEYB_HL */
+	for(i=0; i<16; i++) {
+		if(i == 15) {
+			*cptr++ = 0x7f0c;
+		} else {
+			int v = (i << 1) | (i >> 3);
+			*cptr++ = v | (v << 5) | (v << 10);
+		}
+	}
+
 
 	cptr = (uint16_t*)CRAM_BG_ADDR + FIRST_BLOCK_PAL * 16;
 	for(i=0; i<NUM_BLKCOLS; i++) {
