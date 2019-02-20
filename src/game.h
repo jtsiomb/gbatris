@@ -32,6 +32,8 @@ uint16_t *scrmem, *chrmem;
 uint16_t *chrmem_top;
 
 long tick_interval;
+int music;
+
 
 int init_game(void);
 void cleanup_game(void);

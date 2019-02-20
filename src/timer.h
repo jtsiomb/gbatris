@@ -28,6 +28,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 volatile unsigned long timer_msec;
 
+void init_timer(int tm, unsigned long rate_hz, void (*intr)(void));
+
 void reset_msec_timer(void);
 
 void delay(unsigned long ms);

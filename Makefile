@@ -38,6 +38,8 @@ $(elf): $(obj)
 
 -include $(dep)
 
+src/data.o: src/data.s data/msglogo.img data/music
+
 %.d: %.c
 	$(CPP) $(CFLAGS) $< -MM -MT $(@:.d=.o) >$@
 

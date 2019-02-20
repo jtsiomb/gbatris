@@ -30,6 +30,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "gbaregs.h"
 #include "sound.h"
 
+/* defined in data.s */
+extern unsigned char music_samples[];
+extern unsigned long music_num_samples;
+
+
 enum { ERASE_PIECE, DRAW_PIECE };
 
 /* dimensions of the playfield */
@@ -40,6 +45,8 @@ enum { ERASE_PIECE, DRAW_PIECE };
 #define PF_YOFFS	0
 
 uint16_t scr[SCR_COLS * SCR_ROWS];
+
+int music = 1;
 
 static void update_cur_block(void);
 static void addscore(int nlines);
@@ -183,6 +190,12 @@ int init_game(void)
 
 	drawbg();
 	print_numbers();
+
+	if(music) {
+		void *rdata = music_samples;
+		void *ldata = music_samples + music_num_samples;
+		play_dsound(rdata, ldata, 0, music_num_samples, 16384, DS_LOOP | DS_STEREO);
+	}
 	return 0;
 }
 
@@ -255,6 +268,9 @@ long update(long msec)
 			/* respawn */
 			if(spawn() == -1) {
 				gameover = 1;
+				if(music) {
+					stop_dsound();	/* stop the music */
+				}
 				return 0;
 			}
 		}
@@ -390,6 +406,14 @@ void game_input(int c)
 			score_screen();
 		} else {
 			pause ^= 1;
+
+			if(music) {
+				if(pause) {
+					pause_dsound();
+				} else {
+					resume_dsound();
+				}
+			}
 		}
 		break;
 

@@ -117,6 +117,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define WAVE_RAM_PTR	((unsigned char*)(REG_BASE + 0x90))
 #define REG_FIFO_A		REG32(0xa0)
 #define REG_FIFO_B		REG32(0xa4)
+#define FIFO_A_PTR		((unsigned char*)(REG_BASE + 0xa0))
+#define FIFO_B_PTR		((unsigned char*)(REG_BASE + 0xa4))
 
 /* ---- DMA registers ---- */
 #define REG_DMA0SAD		REG32(0xb0)
@@ -242,7 +244,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define TMCNT_PRESCL_CLK256		2
 #define TMCNT_PRESCL_CLK1024	3
 
-#define TMCNT_COUNTUP			0x04
+#define TMCNT_CASCADE			0x04
 #define TMCNT_IE				0x40
 #define TMCNT_EN				0x80
 
@@ -260,5 +262,69 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define KEYCNT_IE		0x4000
 #define KEYCNT_IAND		0x8000
+
+/* REG_SOUNDCNT_L bits */
+#define SCNT_SS_LVOL(x)		((x) & 7)
+#define SCNT_SS_RVOL(x)		(((x) & 7) << 4)
+#define SCNT_SS_VOL(x)		(SCNT_SS_LVOL(x) | SCNT_SS_RVOL(x))
+#define SCNT_SS1_EN_R		0x0100
+#define SCNT_SS2_EN_R		0x0200
+#define SCNT_SS3_EN_R		0x0400
+#define SCNT_SS4_EN_R		0x0800
+#define SCNT_SS_EN_R(x)		(SCNT_SS1_EN_R << (x))
+#define SCNT_SS1_EN_L		0x1000
+#define SCNT_SS2_EN_L		0x2000
+#define SCNT_SS3_EN_L		0x4000
+#define SCNT_SS4_EN_L		0x8000
+#define SCNT_SS_EN_L(x)		(SCNT_SS1_EN_L << (x))
+#define SCNT_SS1_EN			(SCNT_SS1_EN_R | SCNT_SS1_EN_L)
+#define SCNT_SS2_EN			(SCNT_SS2_EN_R | SCNT_SS2_EN_L)
+#define SCNT_SS3_EN			(SCNT_SS3_EN_R | SCNT_SS3_EN_L)
+#define SCNT_SS4_EN			(SCNT_SS4_EN_R | SCNT_SS4_EN_L)
+#define SCNT_SS_EN(x)		(SCNT_SS_EN_L(x) | SCNT_SS_EN_R(x))
+
+#define SCNT_SS1		0
+#define SCNT_SS2		1
+#define SCNT_SS3		2
+#define SCNT_SS4		3
+
+/* REG_SOUNDCNT_X bits */
+#define SCNT_MASTER_EN		0x0080
+
+/* REG_SOUNDCNT_H bits */
+#define SCNT_SS_VOL_QRT		0x0000
+#define SCNT_SS_VOL_HALF	0x0001
+#define SCNT_SS_VOL_FULL	0x0002
+#define SCNT_DSA_VOL_HALF	0
+#define SCNT_DSA_VOL_FULL	0x0004
+#define SCNT_DSB_VOL_HALF	0
+#define SCNT_DSB_VOL_FULL	0x0008
+#define SCNT_DSA_EN_R		0x0100
+#define SCNT_DSA_EN_L		0x0200
+#define SCNT_DSA_TIMER0		0
+#define SCNT_DSA_TIMER1		0x0400
+#define SCNT_DSA_CLRFIFO	0x0800
+#define SCNT_DSB_EN_R		0x1000
+#define SCNT_DSB_EN_L		0x2000
+#define SCNT_DSB_TIMER0		0
+#define SCNT_DSB_TIMER1		0x4000
+#define SCNT_DSB_CLRFIFO	0x8000
+
+/* REG_DMAxCNT_H bits */
+#define DMACNT_DST_INC		0
+#define DMACNT_DST_DEC		0x0020
+#define DMACNT_DST_FIXED	0x0040
+#define DMACNT_SRC_INC		0
+#define DMACNT_SRC_DEC		0x0080
+#define DMACNT_SRC_FIXED	0x0100
+#define DMACNT_REPEAT		0x0200
+#define DMACNT_16BIT		0
+#define DMACNT_32BIT		0x0400
+#define DMACNT_VBLANK		0x1000
+#define DMACNT_HBLANK		0x2000
+#define DMACNT_SOUND		0x3000
+#define DMACNT_IEN			0x4000
+#define DMACNT_EN			0x8000
+
 
 #endif	/* GBAREGS_H_ */

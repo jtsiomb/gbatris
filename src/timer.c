@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "intr.h"
 #include "timer.h"
 
+#define F_CLK	16780000
 /* clock is 16.78MHz
  * - no prescale: 59.595ns
  * - prescale 64: 3.814us
@@ -27,6 +28,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 static void timer_intr(void);
 
+void init_timer(int tm, unsigned long rate_hz, void (*intr)(void))
+{
+	static const unsigned long clk[] = {F_CLK, F_CLK / 64, F_CLK / 256, F_CLK / 1024};
+	unsigned long count;
+	int pscl = 0;
+
+	do {
+		count = clk[pscl] / rate_hz;
+	} while(count >= 65536 && ++pscl < 4);
+
+	if(pscl >= 4) return;	/* impossible rate */
+
+	REG_TMCNT_H(tm) = 0;
+	REG_TMCNT_L(tm) = 65536 - count;
+	if(intr) {
+		interrupt(INTR_TIMER0 + tm, intr);
+		unmask(INTR_TIMER0 + tm);
+		REG_TMCNT_H(tm) = TMCNT_IE;
+	}
+	REG_TMCNT_H(tm) |= TMCNT_EN | pscl;
+}
 
 void reset_msec_timer(void)
 {

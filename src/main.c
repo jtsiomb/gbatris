@@ -54,7 +54,6 @@ int main(void)
 	setup_tileset(chrmem);
 	score_screen();
 
-	init_game();
 	key_repeat(500, 75, KEY_LEFT | KEY_RIGHT | KEY_DOWN);
 
 	for(;;) {
