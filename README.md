@@ -14,15 +14,15 @@ to be as close as possible to the original GameBoy tetris.
   - website: http://nuclear.mutantstargoat.com/sw/gbatris
   - source repository: https://github.com/jtsiomb/gbatris
 
-gbatris is based on my previous `termtris` project, which runs in
-ANSI/VT220-compatible terminals on UNIX systems:
+gbatris is based on, and shares some code with, my previous `termtris` project,
+which is a tetris for ANSI/VT220-compatible terminals on UNIX systems:
 http://nuclear.mutantstargoat.com/sw/termtris
 
 Controls
 --------
-  - D-pad *left*/*right* moves the block horizontally.
-  - D-pad *down* makes the block fall faster.
-  - *B* button, or D-pad *up* drops the block immediately.
+  - *D-pad left/right* moves the block horizontally.
+  - *D-pad down* makes the block fall faster.
+  - *B* button, or *D-pad up* drops the block immediately.
   - *A* button rotates the block.
   - *START* pauses the game.
   - *SELECT* starts a new game.
