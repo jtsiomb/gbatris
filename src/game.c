@@ -425,6 +425,17 @@ void game_input(int c)
 		score_screen();
 		break;
 
+	case 'm':
+		music ^= 1;
+		if(music) {
+			void *right = music_samples;
+			void *left = music_samples + music_num_samples;
+			play_dsound(right, left, 0, music_num_samples, 16384, DS_LOOP | DS_STEREO);
+		} else {
+			stop_dsound();
+		}
+		break;
+
 	default:
 		break;
 	}

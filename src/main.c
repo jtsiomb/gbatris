@@ -107,6 +107,9 @@ static int handle_keys(unsigned long msec)
 		game_input('d');
 		upd = 1;
 	}
+	if(KEYPRESS(KEY_LT | KEY_RT)) {
+		game_input('m');
+	}
 
 	return upd;
 }
