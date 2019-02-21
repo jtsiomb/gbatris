@@ -30,6 +30,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "gbaregs.h"
 #include "sound.h"
 
+#define MUSIC_SAMPLE_RATE	22050
+
 /* defined in data.s */
 extern unsigned char music_samples[];
 extern unsigned long music_num_samples;
@@ -194,7 +196,7 @@ int init_game(void)
 	if(music) {
 		void *rdata = music_samples;
 		void *ldata = music_samples + music_num_samples;
-		play_dsound(rdata, ldata, 0, music_num_samples, 16384, DS_LOOP | DS_STEREO);
+		play_dsound(rdata, ldata, 0, music_num_samples, MUSIC_SAMPLE_RATE, DS_LOOP | DS_STEREO);
 	}
 	return 0;
 }
@@ -430,7 +432,7 @@ void game_input(int c)
 		if(music) {
 			void *right = music_samples;
 			void *left = music_samples + music_num_samples;
-			play_dsound(right, left, 0, music_num_samples, 16384, DS_LOOP | DS_STEREO);
+			play_dsound(right, left, 0, music_num_samples, MUSIC_SAMPLE_RATE, DS_LOOP | DS_STEREO);
 		} else {
 			stop_dsound();
 		}
