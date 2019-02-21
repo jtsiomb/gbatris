@@ -320,6 +320,8 @@ static void print_numbers(void)
 
 void game_input(int c)
 {
+	char *name = 0;
+
 	switch(c) {
 	case 'a':
 		if(!pause) {
@@ -381,12 +383,10 @@ void game_input(int c)
 
 	case 'p':
 		if(gameover) {
-			if(score) {
-				if(is_highscore(score)) {
-					char *name = name_screen(score);
-					save_score(name, score, lines, level);
-				}
+			if(score && is_highscore(score)) {
+				name = name_screen(score);
 			}
+			save_score(name, score, lines, level);
 			score_screen();
 		} else {
 			pause ^= 1;
@@ -394,12 +394,10 @@ void game_input(int c)
 		break;
 
 	case '\b':
-		if(score) {
-			if(is_highscore(score)) {
-				char *name = name_screen(score);
-				save_score(name, score, lines, level);
-			}
+		if(score && is_highscore(score)) {
+			name = name_screen(score);
 		}
+		save_score(name, score, lines, level);
 		score_screen();
 		break;
 

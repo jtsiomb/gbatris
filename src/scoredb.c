@@ -64,6 +64,11 @@ void save_score(char *name, int score, int lines, int level)
 {
 	int i, rank = -1;
 
+	if(!score) {
+		last_score_rank = -1;
+		return;
+	}
+
 	for(i=0; i<10; i++) {
 		if(scores[i].score <= score) {
 			rank = i;
