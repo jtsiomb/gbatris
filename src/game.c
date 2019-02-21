@@ -420,6 +420,9 @@ void game_input(int c)
 		break;
 
 	case '\b':
+		if(music) {
+			stop_dsound();
+		}
 		if(score && is_highscore(score)) {
 			name = name_screen(score);
 		}
