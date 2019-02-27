@@ -26,6 +26,7 @@ Controls
   - *A* button rotates the block.
   - *START* pauses the game.
   - *SELECT* starts a new game.
+  - pressing either trigger button toggles music on/off.
 
 License
 -------
@@ -44,11 +45,11 @@ https://thereminhero.bandcamp.com/album/lasers-theremin-nes-gameboy
 
 Download
 --------
-Current release of gbatris is v0.1, and is available as a gziped tarball or a
+Current release of gbatris is v1.0, and is available as a gziped tarball or a
 zip archive. Both archives are identical, and contain source code, data files,
 and a pre-compiled GameBoy Advance ROM image:
-  - http://nuclear.mutantstargoat.com/sw/gbatris/gbatris-0.1.tar.gz
-  - http://nuclear.mutantstargoat.com/sw/gbatris/gbatris-0.1.zip
+  - http://nuclear.mutantstargoat.com/sw/gbatris/gbatris-1.0.tar.gz
+  - http://nuclear.mutantstargoat.com/sw/gbatris/gbatris-1.0.zip
 
 Alternatively you may clone the latest version of the source code, directly from
 the git repository:
