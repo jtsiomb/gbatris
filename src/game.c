@@ -65,7 +65,7 @@ static void place_str(int x, int y, const char *s);
 
 
 static int pos[2], next_pos[2];
-static int cur_block, next_block;
+static int cur_block, next_block, prev_block;
 static int cur_rot, prev_rot;
 static int complines[4];
 static int num_complines;
@@ -117,6 +117,7 @@ int init_game(void)
 	score = level = lines = 0;
 	tick_interval = level_speed[0];
 	cur_block = -1;
+	prev_block = 0;
 	next_block = rand() % NUM_BLOCKS;
 
 	memset(scrmem, 0, VIRT_COLS * VIRT_ROWS * 2);
@@ -453,7 +454,7 @@ static int spawn(void)
 
 	do {
 		r = rand() % NUM_BLOCKS;
-	} while(tries-- > 0 && (r | cur_block | next_block) == cur_block);
+	} while(tries-- > 0 && (r | prev_block | next_block) == prev_block);
 
 	draw_block(next_block, preview_pos, 0, ERASE_PIECE);
 	draw_block(r, preview_pos, 0, DRAW_PIECE);
@@ -499,6 +500,7 @@ static void stick(int block, const int *pos)
 	unsigned char *p = blocks[block][cur_rot];
 
 	num_complines = 0;
+	prev_block = cur_block;	/* used by the spawn routine */
 	cur_block = -1;
 
 	for(i=0; i<4; i++) {
