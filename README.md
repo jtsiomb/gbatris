@@ -36,6 +36,12 @@ under the terms of the GNU General Public License version 3, or at your option,
 any later version published by the Free Software Foundation. See COPYING for
 details.
 
+The background music is a short loop from Greig Stewart's Korobeinki
+composition and performance on a Laser Harp.
+Copyright (C) 2012 Greig Stewart <greig@thereminhero.com>
+Get the full version and support the artist on bandcamp:
+https://thereminhero.bandcamp.com/album/lasers-theremin-nes-gameboy
+
 Download
 --------
 Current release of gbatris is v0.1, and is available as a gziped tarball or a
